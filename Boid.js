@@ -54,8 +54,8 @@ export class Boid{
     }
     
     applyForce(force, deltaTime) {
-        let inertiaFactor = 0.001; // Controls how quickly the object can change velocity, simulating inertia
-        let smoothingFactor = 10000000;
+        let inertiaFactor =  1; // Controls how quickly the object can change velocity, simulating inertia
+        let smoothingFactor = 100000;
         const smoothedForce = force.clone().multiplyScalar(smoothingFactor);
     
         // Calculate the desired change in velocity, factoring in inertia

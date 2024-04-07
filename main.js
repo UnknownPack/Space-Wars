@@ -28,80 +28,9 @@ renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 document.body.appendChild(renderer.domElement );
 
-// Generates the environment
-var environment = new EnvironmentGenerator(scene);
-//environment.generateGround(100,100);
-
-var filepath = 'models/american_style_house/scene.gltf';
-var filepath2 = 'models/forest_house/scene.gltf';
-environment.loadGLTFEnvironmentModel(filepath);
-var filepath3 = 'models/Campfire.obj';
-//environment.loadOBJEnvironmentModel(filepath2);
-
-// TODO change to light source
-
-// creates a cube as a temporary reference for interaction 
-const cube_geometry = new THREE.BoxGeometry();
-const cube_material = new THREE.MeshPhongMaterial({ color: 0xff0000, transparent: true });
-const cube = new THREE.Mesh(cube_geometry, cube_material);
-cube.name = "cube";
-cube.position.y = 3;
-cube.position.z = 3;
-
-// Makes cube draggable
-const interactionHandler = new InteractionHandler(camera, renderer);
-interactionHandler.addDragObject(cube);
-scene.add(cube);
-
-var mouse = new THREE.Vector2;
-var raycaster = new THREE.Raycaster();
-var selectedObj = false;
-// If click on cube, drag cube, otherwise change view
-function onDocumentMouseDown( event ) {
-  mouse.x = ( event.clientX / renderer.domElement.clientWidth ) * 2 - 1;
-  mouse.y = - ( event.clientY / renderer.domElement.clientHeight ) * 2 + 1;
-  raycaster.setFromCamera( mouse, camera );
-
-  var intersects = raycaster.intersectObjects( scene.children, false );
-
-  if ( intersects.length > 0 && (intersects[ 0 ].object.name=="cube")) {
-        selectedObj = true;
-        controls.enabled = false;
-        //added this so the cube can be accounted for in spatial partition and this boids will avoid it
-        boidManager.updateObjectPositionInGrid(cube); 
-  }
-}
-function onDocumentMouseUp( event ) {
-  if(selectedObj){
-    selectedObj = false;
-    controls.enabled = true;
-  }
-}
-document.addEventListener( 'mousedown', onDocumentMouseDown, false );
-document.addEventListener( 'mouseup', onDocumentMouseUp, false );
 
 
-
-function ClearScene()
-{
-  for (let i = scene.children.length - 1; i >= 0; i--)
-    if(scene.children[i].type == "Mesh")
-        scene.remove(scene.children[i]);
-}
-
-function CreateTransfMatrices()
-{
-}
-
-function CreateScene()
-{
-  CreateTransfMatrices();
-
-  //create a xyz axis
-  const axesHelper = new THREE.AxesHelper( 5 );
-  scene.add( axesHelper );
-}
-
+ 
 //////////////
 //  Boids   //
 //////////////
@@ -114,16 +43,16 @@ function CreateScene()
   const obstacles = [];
   const velocity = 0.1;
   const maxSpeed = 0.1;
-  const maxForce = 0.1;
+  const maxForce = 0.01;
   const searchRadius = 3;
   // change lightPoint Vector3 to light
-  const lightPoint = new THREE.Vector3(0, 15, 0);
+  const lightPoint = new THREE.Vector3(0, 0, 0);
   const lightAttraction = 100;
   const spawnRadius = 10;
   const boidManager = new BoidManager(numberOfBoids, obstacles, velocity, maxSpeed, maxForce, searchRadius, lightAttraction, spawnRadius, scene);
 
   //add interacble objects
-  boidManager.addNonBoidObeject(cube);
+ 
  
 //////////////
 // CONTROLS //
@@ -143,8 +72,7 @@ var numberOfBoids_adjustable = numberOfBoids
 /////////////////
 // Update Loop //
 ////////////////
-var MyUpdateLoop = function (){ 
-CreateScene();
+var MyUpdateLoop = function (){  
 renderer.render(scene,camera);
 
 var deltaTime = clock.getDelta();
