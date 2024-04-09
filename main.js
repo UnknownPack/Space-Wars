@@ -2,8 +2,22 @@ import * as THREE from 'three';
 import { OrbitControls } from './build/controls/OrbitControls.js';
 import { EnvironmentGenerator } from './EnvironmentGenerator.js';
 import { InteractionHandler } from './InteractionHandler.js'; 
- 
 
+import { OBJLoader } from './build/loaders/OBJLoader.js';
+import { MTLLoader } from './build/loaders/MTLLoader.js';
+
+const mtlLoader = new MTLLoader();
+mtlLoader.load('./models/Space_Ships/sof/sof_.mtl', function(materials) {
+    materials.preload();
+
+    // Load the OBJ file now that materials are ready
+    const objLoader = new OBJLoader();
+    objLoader.setMaterials(materials); // Apply the loaded materials to the OBJ
+    objLoader.load('./models/Space_Ships/sof/sof_.obj', function(object) {
+        scene.add(object);
+        animate();
+    });
+});
 
 var scene = new THREE.Scene( );
 var ratio = window.innerWidth/window.innerHeight;
