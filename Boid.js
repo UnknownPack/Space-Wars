@@ -54,35 +54,20 @@ export class Boid{
     }
     
     applyForce(force, deltaTime) {
-        let inertiaFactor =  1; // Controls how quickly the object can change velocity, simulating inertia
-        let smoothingFactor = 100000;
-        const smoothedForce = force.clone().multiplyScalar(smoothingFactor);
+
+        //current direction of object - force direction
+        var direction = new THREE.Vector3(0, 0, 0);
+        
+
+
+        const inertiaFactor = 0.1; // Adjusted for more immediate response
+        const smoothedForce = force.clone().multiplyScalar(deltaTime * inertiaFactor);
     
-        // Calculate the desired change in velocity, factoring in inertia
-        const deltaV = smoothedForce.multiplyScalar(deltaTime * inertiaFactor);
-    
-        // Shuffle the axes to apply forces in random order
-        const axes = ['x', 'y', 'z'].sort(() => Math.random() - 0.5);
-    
-        // Apply the deltaV component by component in the randomized order
-        axes.forEach(axis => {
-            let targetVelocity = new THREE.Vector3();
-            targetVelocity.copy(this.velocity);
-    
-            // Apply the change to the current axis
-            targetVelocity[axis] += deltaV[axis];
-    
-            // Limit the velocity on this axis to prevent it from increasing indefinitely
-            targetVelocity[axis] = Math.min(Math.max(targetVelocity[axis], -this.maxSpeed), this.maxSpeed);
-    
-            // Smooth out the interpolation of the velocity change for this axis
-            const interpolationFactor = easeInOut(Math.min(deltaTime, 1.0));
-            this.velocity[axis] += (targetVelocity[axis] - this.velocity[axis]) * interpolationFactor;
-        });
-    
-        // Ensure the total velocity doesn't exceed maxSpeed
+        // Apply force directly, without shuffling axes
+        this.velocity.add(smoothedForce);
         this.velocity.clampLength(0, this.maxSpeed);
-    }    
+    }
+    
 
     randomMovement(){
 
