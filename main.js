@@ -2,22 +2,33 @@ import * as THREE from 'three';
 import { OrbitControls } from './build/controls/OrbitControls.js';
 import { EnvironmentGenerator } from './EnvironmentGenerator.js';
 import { InteractionHandler } from './InteractionHandler.js'; 
-
-import { OBJLoader } from './build/loaders/OBJLoader.js';
 import { MTLLoader } from './build/loaders/MTLLoader.js';
-
-const mtlLoader = new MTLLoader();
-mtlLoader.load('./models/Space_Ships/sof/sof_.mtl', function(materials) {
-    materials.preload();
-
-    // Load the OBJ file now that materials are ready
-    const objLoader = new OBJLoader();
-    objLoader.setMaterials(materials); // Apply the loaded materials to the OBJ
-    objLoader.load('./models/Space_Ships/sof/sof_.obj', function(object) {
-        scene.add(object);
-        animate();
-    });
+import { OBJLoader } from './build/loaders/OBJLoader.js';
+ 
+const textureLoader = new THREE.TextureLoader();
+const texture = textureLoader.load('./models/Space_Ships/sof/material_29.jpg');
+// Create a MeshPhongMaterial using the texture
+const phongMaterial = new THREE.MeshPhongMaterial({ 
+  map: texture,
+  specular: 0x222222,
+  shininess: 25
 });
+
+// Load the OBJ file
+const objLoader = new OBJLoader();
+objLoader.load('./models/Space_Ships/sof/sof_.obj', function(object) {
+  object.traverse(function(child) {
+    if (child.isMesh) {
+      child.material = phongMaterial; // Apply the Phong material to each mesh
+    }
+  });
+  scene.add(object);
+  MyUpdateLoop(); // Ensure MyUpdateLoop is defined to animate your scene
+});
+
+ 
+
+ 
 
 var scene = new THREE.Scene( );
 var ratio = window.innerWidth/window.innerHeight;
@@ -27,12 +38,23 @@ var camera = new THREE.PerspectiveCamera(45,ratio,0.1,1000);
 camera.position.set(0,0,15);
 camera.lookAt(0,0,1);
 
-// Creates lightning environment
-var ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+// Modify the lighting environment
+var ambientLight = new THREE.AmbientLight("#100d69", 0.6); // Lower intensity for ambient light
 scene.add(ambientLight);
+
+var pointLight = new THREE.PointLight(0xffffff, 1, 100); // Add a point light for sharper highlights
+pointLight.position.set(51, 51, 51); // Position the point light
+scene.add(pointLight);
+
+// You can also add a directional light similar to the sun's light
+var directionalLight = new THREE.DirectionalLight(0xffffff, 0.8); // Slightly lower intensity
+directionalLight.position.set(0, 1, 0); // Adjust direction as needed
+//scene.add(directionalLight);
+ 
 var directionalLight = new THREE.DirectionalLight(0xffffff, 1);
 directionalLight.position.set(0,30,0);
-scene.add(directionalLight);
+//scene.add(directionalLight);
+
 
 // Creates the renderer
 var renderer = new THREE.WebGLRenderer( );
