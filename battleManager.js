@@ -38,9 +38,22 @@ export class battleManager{
     update(){
         for(const spaceCraft in this.spacecraftList){
             spaceCraft.update();
+            this.missileList.clear();
             for (const missile in spaceCraft.giveMissileList()){
-                missileList.push(missile);
+                this.missileList.push(missile);
             }
+        }
+
+        manageMissiles();
+    }
+
+    manageMissiles(){
+        this.explodedMissile.clear();
+        for (const missile in this.missileList){
+            if(missile.isExploded()){
+                this.missileList = this.missileList.filter(elem => !this.explodedMissile.includes(elem));
+            }
+            else missile.update();
         }
     }
 
