@@ -12,16 +12,16 @@ export class Missile {
         this.damage = damage;
         this.target = target;
         this.timeLife = timeLife;
-        this.addedToList = false; // Fixed scoping
         this.exploded = false;
 
         this.scene = scene;
         this.mesh = null;
         this.createMesh()
+
+        this.deltaTime = deltaTime;
     }
 
-    update(list, deltaTime) {
-        if (!this.addedToList) this.addSelfToMissileList(list); // Fixed reference
+    update( deltaTime) { // Fixed reference
         this.faceEnemy(this.target);
         
         while(timeLife>0){
@@ -43,9 +43,11 @@ export class Missile {
         if(timeLife==0){
             this.explode();
         }
+        this.mesh.position.copy(this.position);
+        this.mesh.quaternion.copy(this.quaternion);
     }
 
-    boidRenderer(){
+    missileRenderer(){
         //checks if mesh is not null and if this mesh is not already in the scene
         if (this.mesh && !this.scene.getObjectById(this.mesh.id)) {
         //if both are true, it adds the boid mesh to the scene
@@ -78,10 +80,6 @@ export class Missile {
         });        
     }
 
-    addSelfToMissileList(list) {
-        list.push(this); // Assuming list is an array
-        this.addedToList = true;
-    }
 
     faceEnemy(target) { 
         const directionVector = new THREE.Vector3().subVectors(target.position, this.position).normalize();
@@ -94,7 +92,11 @@ export class Missile {
         const explosion = new THREE.Mesh(geometry, material);
         explosion.position.copy(this.position);
         this.exploded = true;
-        scene.add(explosion);
+        this.scene.add(explosion);
+
+        var directionalLight = new THREE.DirectionalLight(0xffffff, 0.8); // Slightly lower intensity
+        directionalLight.position.set(this.position); // Adjust direction as needed
+        this.scene.add(directionalLight);
 
         setTimeout(() => {
             scene.remove(explosionMesh); 

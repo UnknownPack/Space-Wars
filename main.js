@@ -1,34 +1,9 @@
 import * as THREE from 'three';
 import { OrbitControls } from './build/controls/OrbitControls.js';
 import { EnvironmentGenerator } from './EnvironmentGenerator.js';
-import { InteractionHandler } from './InteractionHandler.js'; 
 import { MTLLoader } from './build/loaders/MTLLoader.js';
 import { OBJLoader } from './build/loaders/OBJLoader.js';
- 
-const textureLoader = new THREE.TextureLoader();
-const texture = textureLoader.load('./models/Space_Ships/sof/material_29.jpg');
-// Create a MeshPhongMaterial using the texture
-const phongMaterial = new THREE.MeshPhongMaterial({ 
-  map: texture,
-  specular: 0x222222,
-  shininess: 25
-});
-
-// Load the OBJ file
-const objLoader = new OBJLoader();
-objLoader.load('./models/Space_Ships/sof/sof_.obj', function(object) {
-  object.traverse(function(child) {
-    if (child.isMesh) {
-      child.material = phongMaterial; // Apply the Phong material to each mesh
-    }
-  });
-  scene.add(object);
-  MyUpdateLoop(); // Ensure MyUpdateLoop is defined to animate your scene
-});
-
- 
-
- 
+import { battleManager } from './battleManager.js';
 
 var scene = new THREE.Scene( );
 var ratio = window.innerWidth/window.innerHeight;
@@ -39,21 +14,21 @@ camera.position.set(0,0,15);
 camera.lookAt(0,0,1);
 
 // Modify the lighting environment
-var ambientLight = new THREE.AmbientLight("#100d69", 0.6); // Lower intensity for ambient light
-scene.add(ambientLight);
+var ambientLight = new THREE.AmbientLight("#100d69", 1); // Lower intensity for ambient light
+//scene.add(ambientLight);
 
-var pointLight = new THREE.PointLight(0xffffff, 1, 100); // Add a point light for sharper highlights
-pointLight.position.set(51, 51, 51); // Position the point light
+var pointLight = new THREE.PointLight("#100d69", 1, 100, 2); // Add a point light for sharper highlights
+pointLight.position.set(1, 1, 1); // Position the point light
 scene.add(pointLight);
 
 // You can also add a directional light similar to the sun's light
 var directionalLight = new THREE.DirectionalLight(0xffffff, 0.8); // Slightly lower intensity
 directionalLight.position.set(0, 1, 0); // Adjust direction as needed
-//scene.add(directionalLight);
+scene.add(directionalLight);
  
 var directionalLight = new THREE.DirectionalLight(0xffffff, 1);
 directionalLight.position.set(0,30,0);
-//scene.add(directionalLight);
+scene.add(directionalLight);
 
 
 // Creates the renderer
@@ -66,16 +41,13 @@ document.body.appendChild(renderer.domElement );
 
 
  
-//////////////
-//  Boids   //
-//////////////
-
-
-
-  // Create boid manager
-  //these paramters can be changed
-  
-  //add interacble objects
+ ////////////////////
+//  Space Battle   //
+///////////////////
+var num_if_ships = 4;
+var radius_of_battle = 10;
+var middke_of_battle = THREE.Vector3(0, 0, 0);
+const battleManager = new battleManager ( num_if_ships, radius_of_battle, middke_of_battle, scene);
  
  
 //////////////
@@ -88,25 +60,22 @@ document.body.appendChild(renderer.domElement );
 // add the new control and link to the current camera to transform its position
 
 var controls = new OrbitControls( camera, renderer.domElement );
-
-//final update loop
 var clock = new THREE.Clock(); 
 
 /////////////////
 // Update Loop //
 ////////////////
+
+battleManager.makeTeams();
+
 var MyUpdateLoop = function (){  
 renderer.render(scene,camera);
-
 var deltaTime = clock.getDelta();
-//insert in method bellow, another method that returns the position of the light 
- 
- 
-//controls.update(); 
+battleManager.update(deltaTime);
+
 
 requestAnimationFrame(MyUpdateLoop);
 };
-
 requestAnimationFrame(MyUpdateLoop);
 
 //keyboard functions, change parameters values

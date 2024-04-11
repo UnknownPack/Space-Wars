@@ -1,9 +1,11 @@
 import * as THREE from 'three';
 import { Missile } from './missile.js'; 
+import { MTLLoader } from './build/loaders/MTLLoader.js';
+import { OBJLoader } from './build/loaders/OBJLoader.js';
 
 export class spacecraft {
 
-    constructor(x, y, z, health, speed, range, ammo, side) {
+    constructor(x, y, z, health, speed, range, ammo, scene, side) {
         this.position = new THREE.Vector3(x, y, z);  
         this.quaternion = new THREE.Quaternion();
         this.rotationSpeed = 0.05;
@@ -15,13 +17,13 @@ export class spacecraft {
         this.range = range;
 
         this.enemy = null;
-        this.side = side;
         this.missleList = [];
+        this.side = side;
 
         this.dead = false;
-
+        this.scene = scene;
         this.mesh = null;
-        createMesh()
+        this.createMesh()
     }
          
     update(list, deltaTime) { 
@@ -42,11 +44,13 @@ export class spacecraft {
     
                 if(this.position.distanceTo(this.target.position) <= this.range){
                     for(let i = 0; i <this.ammo; i++){
-                        const rocket = new Missile (this.position.x, this.position.y, this.position.z,50, 0.05, 100, this.target, 5000);
+                        const rocket = new Missile (this.position.x, this.position.y, this.position.z,50, 0.05, 100, this.target, 5000, this.scene);
                         rocket.addSelfToMissileList(this.missleList);
                     }
                 }
             }
+            this.mesh.position.copy(this.position);
+            this.mesh.quaternion.copy(this.quaternion);
         }
          
 
@@ -55,8 +59,37 @@ export class spacecraft {
         }
     }
 
+    shipRenderer(){
+        //checks if mesh is not null and if this mesh is not already in the scene
+        if (this.mesh && !this.scene.getObjectById(this.mesh.id)) {
+            //if both are true, it adds the boid mesh to the scene
+            this.scene.add(this.mesh);
+        }
+    }
+
     createMesh(){
-        
+        // Load the OBJ file
+        const textureLoader = new THREE.TextureLoader();
+        const texture = textureLoader.load('./models/Space_Ships/sof/material_29.jpg');
+
+        // Create a MeshPhongMaterial using the texture
+        const phongMaterial = new THREE.MeshPhongMaterial({ 
+        map: texture,
+        specular: 0x222222,
+        shininess: 25
+        });
+
+        const objLoader = new OBJLoader(); 
+        objLoader.load('./models/Space_Ships/sof/sof_.obj', (object) => {
+            object.traverse((child) => {
+                if (child.isMesh) {
+                    child.material = phongMaterial;
+                }
+            });
+            this.mesh = object; // Assign the loaded object to this.mesh
+            this.scene.add(this.mesh);
+            // No need to call MyUpdateLoop here; it should be part of your rendering loop.
+        });
     }
 
     searchForClosestEnemy(list){
@@ -94,6 +127,7 @@ export class spacecraft {
             this.targetQuaternion = new THREE.Quaternion();
         }
     }
+
   
     giveMissileList(){
         return missleList;
@@ -105,12 +139,18 @@ export class spacecraft {
         const explosion = new THREE.Mesh(geometry, material);
         explosion.position.copy(this.position);
         this.dead = true;
-        scene.add(explosion);
+        this.scene.add(explosion);
+
+        var directionalLight = new THREE.DirectionalLight(0xffffff, 0.8); // Slightly lower intensity
+        directionalLight.position.set(this.position); // Adjust direction as needed
+        this.scene.add(directionalLight);
 
         setTimeout(() => {
             scene.remove(explosionMesh); 
         }, 3000);
     }
     
-    
+    getSide(){
+        return this.side;
+    }
   }
