@@ -1,8 +1,5 @@
 import * as THREE from 'three';
 import { OrbitControls } from './build/controls/OrbitControls.js';
-import { EnvironmentGenerator } from './EnvironmentGenerator.js';
-import { MTLLoader } from './build/loaders/MTLLoader.js';
-import { OBJLoader } from './build/loaders/OBJLoader.js';
 import { battleManager } from './battleManager.js';
 
 var scene = new THREE.Scene( );
@@ -15,8 +12,8 @@ camera.lookAt(0,0,1);
 
 // Modify the lighting environment
 var ambientLight = new THREE.AmbientLight("#100d69", 1); // Lower intensity for ambient light
-//scene.add(ambientLight);
-
+scene.add(ambientLight);
+/*
 var pointLight = new THREE.PointLight("#100d69", 1, 100, 2); // Add a point light for sharper highlights
 pointLight.position.set(1, 1, 1); // Position the point light
 scene.add(pointLight);
@@ -29,7 +26,7 @@ scene.add(directionalLight);
 var directionalLight = new THREE.DirectionalLight(0xffffff, 1);
 directionalLight.position.set(0,30,0);
 scene.add(directionalLight);
-
+*/
 
 // Creates the renderer
 var renderer = new THREE.WebGLRenderer( );
@@ -39,15 +36,14 @@ renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 document.body.appendChild(renderer.domElement );
 
 
-
  
  ////////////////////
 //  Space Battle   //
 ///////////////////
-var num_if_ships = 4;
-var radius_of_battle = 10;
-var middke_of_battle = THREE.Vector3(0, 0, 0);
-const battleManager = new battleManager ( num_if_ships, radius_of_battle, middke_of_battle, scene);
+const num_if_ships = 2;
+const radius_of_battle = 10;
+const middle_of_battle = new THREE.Vector3(0, 0, 0);
+const theBattleManager = new battleManager ( num_if_ships, radius_of_battle, middle_of_battle, scene);
  
  
 //////////////
@@ -66,12 +62,12 @@ var clock = new THREE.Clock();
 // Update Loop //
 ////////////////
 
-battleManager.makeTeams();
+theBattleManager.makeTeams();
 
 var MyUpdateLoop = function (){  
 renderer.render(scene,camera);
 var deltaTime = clock.getDelta();
-battleManager.update(deltaTime);
+theBattleManager.update(deltaTime);
 
 
 requestAnimationFrame(MyUpdateLoop);

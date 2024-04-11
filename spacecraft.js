@@ -3,9 +3,9 @@ import { Missile } from './missile.js';
 import { MTLLoader } from './build/loaders/MTLLoader.js';
 import { OBJLoader } from './build/loaders/OBJLoader.js';
 
-export class spacecraft {
+export class Spacecraft {
 
-    constructor(x, y, z, health, speed, range, ammo, scene, side) {
+    constructor(x, y, z, health, speed, range, ammo, scene, side, geometry, material) {
         this.position = new THREE.Vector3(x, y, z);  
         this.quaternion = new THREE.Quaternion();
         this.rotationSpeed = 0.05;
@@ -22,14 +22,19 @@ export class spacecraft {
 
         this.dead = false;
         this.scene = scene;
-        this.mesh = null;
-        this.createMesh()
+        this.mesh = null; 
+
+        if (geometry && material) {
+            this.mesh = new THREE.Mesh(geometry, material.clone()); // Clone the material for each instance
+            this.mesh.position.set(x, y, z);
+            scene.add(this.mesh);
+        }
     }
          
     update(list, deltaTime) { 
         if(!this.dead){
             if(this.enemy == null){
-                faceEnemy(list);
+                this.faceEnemy(list);
                 
             }
             else{
@@ -65,31 +70,6 @@ export class spacecraft {
             //if both are true, it adds the boid mesh to the scene
             this.scene.add(this.mesh);
         }
-    }
-
-    createMesh(){
-        // Load the OBJ file
-        const textureLoader = new THREE.TextureLoader();
-        const texture = textureLoader.load('./models/Space_Ships/sof/material_29.jpg');
-
-        // Create a MeshPhongMaterial using the texture
-        const phongMaterial = new THREE.MeshPhongMaterial({ 
-        map: texture,
-        specular: 0x222222,
-        shininess: 25
-        });
-
-        const objLoader = new OBJLoader(); 
-        objLoader.load('./models/Space_Ships/sof/sof_.obj', (object) => {
-            object.traverse((child) => {
-                if (child.isMesh) {
-                    child.material = phongMaterial;
-                }
-            });
-            this.mesh = object; // Assign the loaded object to this.mesh
-            this.scene.add(this.mesh);
-            // No need to call MyUpdateLoop here; it should be part of your rendering loop.
-        });
     }
 
     searchForClosestEnemy(list){
@@ -148,6 +128,9 @@ export class spacecraft {
         setTimeout(() => {
             scene.remove(explosionMesh); 
         }, 3000);
+        this.scene.remove(this.mesh);
+        if (this.mesh.material) this.mesh.material.dispose();
+        if (this.mesh.geometry) this.mesh.geometry.dispose();
     }
     
     getSide(){

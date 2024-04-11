@@ -1,4 +1,3 @@
-import { MTLLoader } from './build/loaders/MTLLoader.js';
 import { OBJLoader } from './build/loaders/OBJLoader.js';
 import * as THREE from 'three';
 
@@ -16,7 +15,7 @@ export class Missile {
 
         this.scene = scene;
         this.mesh = null;
-        this.createMesh()
+        this.createMesh();
 
         this.deltaTime = deltaTime;
     }
@@ -101,6 +100,9 @@ export class Missile {
         setTimeout(() => {
             scene.remove(explosionMesh); 
         }, 3000);
+        this.scene.remove(this.mesh);
+        if (this.mesh.material) this.mesh.material.dispose();
+        if (this.mesh.geometry) this.mesh.geometry.dispose();
     }
 
     isExploded(){

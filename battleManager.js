@@ -1,9 +1,9 @@
 import * as THREE from 'three';
-import { spacecraft } from './spacecraft.js'; 
+import { Spacecraft } from './spacecraft.js';
 
 export class battleManager{
     constructor(number_of_entites, radius_of_battle, middle_of_battle, scene){
-        this.number_of_entites = makeEven(number_of_entites);
+        this.number_of_entites = this.makeNumEven(number_of_entites);
         this.radius_of_battle = radius_of_battle;
         this.middle_of_battle = middle_of_battle;
 
@@ -18,6 +18,32 @@ export class battleManager{
         this.deltaTime = null;
 
         this.scene = scene;
+
+        ///////////////////////////////
+        //  Objects and Materials   //
+        /////////////////////////////
+        
+        this.spacecraftGeometry = null;
+        this.spacecraftMaterial = null;
+
+        const textureLoader = new THREE.TextureLoader();
+        textureLoader.load('./models/Space_Ships/sof/material_29.jpg', (texture) => {
+            spacecraftMaterial = new THREE.MeshPhongMaterial({ 
+                map: texture,
+                specular: 0x222222,
+                shininess: 25
+            });
+
+            const objLoader = new OBJLoader();
+            objLoader.load('./models/Space_Ships/sof/sof_.obj', (object) => {
+                object.traverse((child) => {
+                    if (child.isMesh) {
+                        spacecraftGeometry = child.geometry;
+                    }
+                });
+                // Now that we have the geometry and material, we can create spacecraft instances as needed
+            });
+        });
     }
 
     makeTeams(){
@@ -29,14 +55,14 @@ export class battleManager{
             let areaMax = this.middle_of_battle.clone().add(new THREE.Vector3(this.radius_of_battle, this.radius_of_battle, this.radius_of_battle));
 
             let spawnPosition = new THREE.Vector3(
-                getRandomInt(areaMin.x, areaMax.x),
-                getRandomInt(areaMin.y, areaMax.y),
-                getRandomInt(areaMin.z, areaMax.z)
+                this.getRandomInt(areaMin.x, areaMax.x),
+                this.getRandomInt(areaMin.y, areaMax.y),
+                this.getRandomInt(areaMin.z, areaMax.z)
 );
         
-                const spacecraft = new spacecraft(spawnPosition.x, spawnPosition.y, spawnPosition.z, 1000, 1, 25, 6,scene, i );
-                this.teams[i].push(spacecraft);
-                spacecraftList.push(spacecraft);
+                const new_spacecraft = new Spacecraft(spawnPosition.x, spawnPosition.y, spawnPosition.z, 1000, 1, 25, 6, this.scene, i, this.spacecraftGeometry, this.spacecraftMaterial );
+                this.teams[i].push(new_spacecraft);
+                this.spacecraftList.push(new_spacecraft);
             }
         }
     }
@@ -67,16 +93,18 @@ export class battleManager{
             }
             else{
                 missile.update(deltaTime);
-                missile.missileRenderer();
+                missile.missileRenderer(); 
             }  
         }
     }
 
-     makeEven(number) {
+    makeNumEven(number) {
         return number % 2 === 1 ? number + 1 : number;
-      }
+    }
       
     getRandomInt(min, max) {
         return Math.floor(Math.random() * (max - min + 1)) + min;
     }
+
+    
 }
