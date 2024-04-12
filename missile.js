@@ -16,9 +16,14 @@ export class Missile {
 
         this.scene = scene;
         this.mesh = null;
-        this.createMesh();
+        //this.createMesh();
 
         this.deltaTime = deltaTime;
+
+        var geometry = new THREE.SphereGeometry(1, 32, 32); // radius, widthSegments, heightSegments
+        var material = new THREE.MeshBasicMaterial({ color: 0xffffff }); // white color
+        this.mesh = new THREE.Mesh(geometry, material);
+        this.scene.add(sphere);
     }
 
     update( deltaTime) { // Fixed reference
@@ -55,6 +60,7 @@ export class Missile {
         }
     }
 
+    /*
     createMesh(){
         // Load the OBJ file
         const textureLoader = new THREE.TextureLoader();
@@ -79,6 +85,7 @@ export class Missile {
             // No need to call MyUpdateLoop here; it should be part of your rendering loop.
         });        
     }
+    */
 
 
     faceEnemy(target) { 
@@ -100,10 +107,12 @@ export class Missile {
         if (this.mesh.material) this.mesh.material.dispose();
         if (this.mesh.geometry) this.mesh.geometry.dispose();
 
+        /*
         setTimeout(() => {
             scene.remove(explosionMesh); 
         }, 3000);
         this.scene.remove(this.mesh);
+        */
         
     }
 

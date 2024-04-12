@@ -25,9 +25,9 @@ export class Spacecraft {
         this.mesh = null; 
 
         if (geometry && material) {
-            this.mesh = new THREE.Mesh(geometry, material.clone()); // Clone the material for each instance
+            this.mesh = new THREE.Mesh(geometry, material.clone()); // Clone the material for each instance  
             this.mesh.position.set(x, y, z);
-            scene.add(this.mesh);
+            this.scene.add(this.mesh);
         }
     }
          
@@ -125,9 +125,11 @@ export class Spacecraft {
         this.scene.add(directionalLight);
         if (this.mesh.material) this.mesh.material.dispose();
         if (this.mesh.geometry) this.mesh.geometry.dispose();
+        /*
         setTimeout(() => {
-            scene.remove(explosionMesh); 
+            this.scene.remove(explosionMesh); 
         }, 3000);
+        */
         this.scene.remove(this.mesh);
  
     }

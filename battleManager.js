@@ -28,7 +28,12 @@ export class battleManager{
         
         this.spacecraftGeometry = null;
         this.spacecraftMaterial = null;
+        this.spacecraftGeometry= new THREE.PlaneGeometry(2, 1); // width, height
+        this.spacecraftMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff }); // white color
+         
 
+
+        /*
         const textureLoader = new THREE.TextureLoader();
         textureLoader.load('./models/Space_Ships/Ship1/Starcruiser_military.mtl', (texture) => {
             this.spacecraftMaterial = new THREE.MeshPhongMaterial({ 
@@ -47,6 +52,7 @@ export class battleManager{
                 // Now that we have the geometry and material, we can create spacecraft instances as needed
             });
         });
+        */
     }
 
     makeTeams(){
