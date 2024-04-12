@@ -28,7 +28,7 @@ export class battleManager{
         
         this.spacecraftGeometry = null;
         this.spacecraftMaterial = null;
-        this.spacecraftGeometry= new THREE.PlaneGeometry(2, 1); // width, height
+        this.spacecraftGeometry= new THREE.BoxGeometry(3, 1, 1); // width, height
         this.spacecraftMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff }); // white color
          
 
@@ -58,7 +58,7 @@ export class battleManager{
     makeTeams(){
         let halves = this.number_of_entites/2;
         for(let i = 0; i<2; i++){
-            for(let p = 0; i<halves; p++){
+            for(let p = 0; p<halves; p++){
 
             let areaMin = this.middle_of_battle.clone().sub(new THREE.Vector3(this.radius_of_battle, this.radius_of_battle, this.radius_of_battle));
             let areaMax = this.middle_of_battle.clone().add(new THREE.Vector3(this.radius_of_battle, this.radius_of_battle, this.radius_of_battle));
@@ -77,20 +77,20 @@ export class battleManager{
     }
 
     update(deltaTime){
-        for(const spaceCraft in this.spacecraftList){
+        for(const spaceCraft of this.spacecraftList){
             if(spaceCraft.getSide() == 0){
-                spaceCraft.update(deltaTime, this.teamTwo);
+                spaceCraft.update(this.teamTwo, deltaTime);
             }
             else if (spaceCraft.getSide() == 1){
-                spaceCraft.update(deltaTime, this.teamOne);
+                spaceCraft.update(this.teamOne, deltaTime);
             }
             spaceCraft.shipRenderer();
-            this.missileList = [];
-            for (const missile in spaceCraft.giveMissileList()){
+        this.missileList = [];
+
+            for (const missile of spaceCraft.giveMissileList()){
                 this.missileList.push(missile);
             }
         }
-
         this.manageMissiles(deltaTime);
     }
 

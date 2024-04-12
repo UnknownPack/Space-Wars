@@ -23,7 +23,7 @@ export class Missile {
         var geometry = new THREE.SphereGeometry(1, 32, 32); // radius, widthSegments, heightSegments
         var material = new THREE.MeshBasicMaterial({ color: 0xffffff }); // white color
         this.mesh = new THREE.Mesh(geometry, material);
-        this.scene.add(sphere);
+        this.scene.add(this.mesh);
     }
 
     update( deltaTime) { // Fixed reference
