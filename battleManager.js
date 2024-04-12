@@ -28,11 +28,7 @@ export class battleManager{
         
         this.spacecraftGeometry = null;
         this.spacecraftMaterial = null;
-        this.spacecraftGeometry= new THREE.BoxGeometry(3, 1, 1); // width, height
-        this.spacecraftMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff }); // white color
-         
-
-
+ 
         /*
         const textureLoader = new THREE.TextureLoader();
         textureLoader.load('./models/Space_Ships/Ship1/Starcruiser_military.mtl', (texture) => {
@@ -53,7 +49,41 @@ export class battleManager{
             });
         });
         */
+        
     }
+
+    async loadResources() {
+        const mtlPath = './models/Space_Ships/Ship1/Starcruiser_military.mtl';
+        const modelPath = './models/Space_Ships/Ship1/Starcruiser_military.obj';
+    
+        // Load materials using MTLLoader
+        const mtlLoader = new MTLLoader();
+        const materials = await new Promise((resolve, reject) => {
+            mtlLoader.load(mtlPath, (loadedMaterials) => {
+                loadedMaterials.preload();
+                resolve(loadedMaterials);
+            }, null, reject);
+        });
+    
+        // Load model using OBJLoader and apply materials
+        const objLoader = new OBJLoader();
+        objLoader.setMaterials(materials);
+        const object = await new Promise((resolve, reject) => {
+            objLoader.load(modelPath, (obj) => {
+                resolve(obj); // Resolve the loaded object
+            }, null, reject);
+        });
+    
+        // Assuming you want to use the entire loaded object
+        this.spacecraftMaterial= materials;
+        this.spacecraftGeometry = object; 
+    }
+    
+
+        async initialize() {
+            await this.loadResources();
+            this.makeTeams(); // Safe to call makeTeams here
+        }
 
     makeTeams(){
         let halves = this.number_of_entites/2;

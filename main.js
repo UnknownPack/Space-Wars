@@ -42,9 +42,18 @@ document.body.appendChild(renderer.domElement );
 ///////////////////
 const num_if_ships = 2;
 const radius_of_battle = 10;
-const middle_of_battle = new THREE.Vector3(0, 0, 0);
-const theBattleManager = new battleManager ( num_if_ships, radius_of_battle, middle_of_battle, scene);
- 
+const middle_of_battle = new THREE.Vector3(0, 0, 0); 
+const theBattleManager = new battleManager(num_if_ships, radius_of_battle, middle_of_battle, scene);
+theBattleManager.initialize().then(() => {
+    // Now that resources are loaded and teams are made, start the animation loop
+    function animate() {
+        requestAnimationFrame(animate);
+        // Render your scene, update objects, etc.
+    }
+    requestAnimationFrame(animate);
+}).catch(error => {
+    console.error("An error occurred during initialization:", error);
+});
  
 //////////////
 // CONTROLS //
@@ -62,17 +71,16 @@ var clock = new THREE.Clock();
 // Update Loop //
 ////////////////
 
-theBattleManager.makeTeams();
+// theBattleManager.makeTeams();
 
-var MyUpdateLoop = function (){  
-renderer.render(scene,camera);
-var deltaTime = clock.getDelta();
-theBattleManager.update(deltaTime);
+  var MyUpdateLoop = function (){  
+  renderer.render(scene,camera);
+  var deltaTime = clock.getDelta();
+  theBattleManager.update(deltaTime);
 
-
-requestAnimationFrame(MyUpdateLoop);
-};
-requestAnimationFrame(MyUpdateLoop);
+  requestAnimationFrame(MyUpdateLoop);
+  };
+  requestAnimationFrame(MyUpdateLoop);
 
 //keyboard functions, change parameters values
 function handleKeyDown(event) {

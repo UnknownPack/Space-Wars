@@ -24,11 +24,17 @@ export class Spacecraft {
         this.scene = scene;
         this.mesh = null; 
 
-        if (geometry && material) {
-            this.mesh = new THREE.Mesh(geometry, material.clone()); // Clone the material for each instance  
-            this.mesh.position.set(x, y, z);
-            this.scene.add(this.mesh);
-        }
+        if (geometry instanceof THREE.BufferGeometry) {
+            if (material instanceof THREE.Material) {
+                this.mesh = new THREE.Mesh(geometry, material);
+                this.mesh.position.copy(this.position);
+                this.scene.add(this.mesh);
+            } else {
+                console.error("Invalid material provided");
+            }
+        } else {
+            console.error("Invalid or undefined geometry provided");
+        } 
     }
          
     update(list, deltaTime) { 
