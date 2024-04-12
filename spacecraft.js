@@ -35,7 +35,6 @@ export class Spacecraft {
         if(!this.dead){
             if(this.enemy == null){
                 this.faceEnemy(list);
-                
             }
             else{
                 if (this.targetQuaternion){
@@ -124,13 +123,13 @@ export class Spacecraft {
         var directionalLight = new THREE.DirectionalLight(0xffffff, 0.8); // Slightly lower intensity
         directionalLight.position.set(this.position); // Adjust direction as needed
         this.scene.add(directionalLight);
-
+        if (this.mesh.material) this.mesh.material.dispose();
+        if (this.mesh.geometry) this.mesh.geometry.dispose();
         setTimeout(() => {
             scene.remove(explosionMesh); 
         }, 3000);
         this.scene.remove(this.mesh);
-        if (this.mesh.material) this.mesh.material.dispose();
-        if (this.mesh.geometry) this.mesh.geometry.dispose();
+ 
     }
     
     getSide(){
