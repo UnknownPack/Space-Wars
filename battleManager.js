@@ -14,6 +14,7 @@ export class battleManager {
         this.deltaTime = null;
 
         this.scene = scene;
+        this.makeTeams();
 
         ///////////////////////////////
         //  Objects and Materials   //
@@ -21,8 +22,12 @@ export class battleManager {
         
         this.spacecraftGeometry = null;
         this.spacecraftMaterial = null;
-        this.spacecraftGeometry= new THREE.BoxGeometry(3, 1, 1); // width, height
-        this.spacecraftMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff }); // white color
+        this.spacecraftGeometry= new THREE.BoxGeometry(10, 10, 10); // width, height
+        this.spacecraftMaterial = new THREE.MeshPhongMaterial({
+            color: 0xffffff,     // White color
+            specular: 0x050505,  // Very low specular highlights
+            shininess: 10        // Relatively low shininess
+        });
          
 
 
@@ -85,6 +90,16 @@ export class battleManager {
             }
         }
         this.manageMissiles(deltaTime);
+
+        for(const spaceCraft of this.spacecraftList){
+            console.log(spaceCraft.getPosition());
+        }
+    }
+
+    displayShipPos(){
+        for(const spaceCraft of this.spacecraftList){
+            console.log(spaceCraft.getPosition());
+        }
     }
 
     manageMissiles(deltaTime){

@@ -7,8 +7,12 @@ var ratio = window.innerWidth/window.innerHeight;
 //create the perspective camera
 //for parameters see https://threejs.org/docs/#api/cameras/PerspectiveCamera
 var camera = new THREE.PerspectiveCamera(45,ratio,0.1,1000);
-camera.position.set(0,0,15);
-camera.lookAt(0,0,1);
+camera.position.set(0, 0, 15);
+camera.lookAt(0, 0, 0);
+
+var directionalLight = new THREE.DirectionalLight(0xffffff, 1); // Bright white light
+directionalLight.position.set(5, 3, 5); // Adjust position to suit scene setup
+scene.add(directionalLight);
 
 // Modify the lighting environment
 var ambientLight = new THREE.AmbientLight("#100d69", 1); // Lower intensity for ambient light
@@ -40,7 +44,7 @@ document.body.appendChild(renderer.domElement );
  ////////////////////
 //  Space Battle   //
 ///////////////////
-const num_if_ships = 1;
+const num_if_ships = 4;
 const radius_of_battle = 10;
 const middle_of_battle = new THREE.Vector3(0, 0, 0);
 const theBattleManager = new battleManager ( num_if_ships, radius_of_battle, middle_of_battle, scene);
@@ -61,18 +65,21 @@ var clock = new THREE.Clock();
 /////////////////
 // Update Loop //
 ////////////////
-
-theBattleManager.makeTeams();
-
+ 
 var MyUpdateLoop = function (){  
-renderer.render(scene,camera);
-var deltaTime = clock.getDelta();
-theBattleManager.update(deltaTime);
 
+  console.log(scene);
+  // or during your update loop
+  console.log(scene.children);
 
-requestAnimationFrame(MyUpdateLoop);
-};
-requestAnimationFrame(MyUpdateLoop);
+  theBattleManager.displayShipPos();
+  renderer.render(scene,camera);
+  var deltaTime = clock.getDelta();
+  theBattleManager.update(deltaTime);
+  requestAnimationFrame(MyUpdateLoop);
+  };
+
+  requestAnimationFrame(MyUpdateLoop);
 
 //keyboard functions, change parameters values
 function handleKeyDown(event) {

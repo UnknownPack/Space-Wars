@@ -144,4 +144,8 @@ export class Spacecraft {
     getSide(){
         return this.side;
     }
+
+    getPosition(){
+        return this.position;
+    }
   }
