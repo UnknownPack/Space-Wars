@@ -65,12 +65,7 @@ var clock = new THREE.Clock();
 /////////////////
 // Update Loop //
 ////////////////
-theBattleManager.makeTeams();
 var MyUpdateLoop = function (){  
-
-   
-
-   
   renderer.render(scene,camera);
   var deltaTime = clock.getDelta();
   theBattleManager.update(deltaTime); 

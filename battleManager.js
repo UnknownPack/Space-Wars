@@ -22,14 +22,25 @@ export class battleManager {
         ///////////////////////////////
         //  Objects and Materials   //
         /////////////////////////////
-        
          
-        this.spacecraftGeometry= new THREE.BoxGeometry(2, 1, 1); // width, height
+        this.spacecraftGeometry = null;
         this.spacecraftMaterial = new THREE.MeshPhongMaterial({
             color: 0xff0000, // Red color
             specular: 0x050505,
             shininess: 10
         });
+        const objLoader = new OBJLoader();
+        objLoader.load('./models/Space_Ship/SpaceShipDetailed.obj', (object) => {
+            object.traverse((child) => {
+                if (child.isMesh) {
+                    this.spacecraftGeometry = child.geometry;
+                    // Now geometry is loaded, can initialize teams
+                    this.makeTeams();
+                }
+            }); 
+        });
+ 
+ 
          
         /*
         const textureLoader = new THREE.TextureLoader();

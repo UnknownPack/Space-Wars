@@ -23,8 +23,8 @@ export class Spacecraft {
         this.dead = false;
         this.scene = scene; 
         this.mesh = new THREE.Mesh(geometry, material);
-                this.mesh.position.copy(this.position);
-                this.scene.add(this.mesh);
+        this.mesh.position.copy(this.position);
+        this.scene.add(this.mesh);
     }
          
     update(list, deltaTime) { 
@@ -53,7 +53,7 @@ export class Spacecraft {
             this.mesh.position.copy(this.position);
             this.mesh.quaternion.copy(this.quaternion);
         }
-        console.log(this.missleList.length);
+        console.log(this.position);
 
         if(this.health == 0){
             explode();
