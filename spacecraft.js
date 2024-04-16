@@ -6,38 +6,34 @@ import { OBJLoader } from './build/loaders/OBJLoader.js';
 export class Spacecraft {
 
     constructor(x, y, z, health, speed, range, ammo, scene, side, geometry, material) {
-        this.position = new THREE.Vector3(x, y, z);  
+        this.position = new THREE.Vector3(x, y, z);
         this.quaternion = new THREE.Quaternion();
         this.rotationSpeed = 0.05;
         this.targetQuaternion = new THREE.Quaternion();
-
+    
         this.health = health;
-        this.speed = speed; 
+        this.speed = speed;
         this.ammo = ammo;
         this.range = range;
-
+    
         this.enemy = null;
-        this.missleList = [];
+        this.missileList = [];
         this.side = side;
-
+    
         this.dead = false;
         this.scene = scene;
-        this.mesh = null; 
-
-        if (geometry instanceof THREE.BufferGeometry) {
-            if (material instanceof THREE.Material) {
-                this.mesh = new THREE.Mesh(geometry, material);
-                this.mesh.position.copy(this.position);
-                this.scene.add(this.mesh);
-            } else {
-                console.error("Invalid material provided");
-            }
+        this.mesh = null;
+    
+        if (geometry && material) {
+            this.mesh = new THREE.Mesh(geometry, material);
+            this.scene.add(this.mesh);
         } else {
-            console.error("Invalid or undefined geometry provided");
-        } 
+            console.error("Geometry or material not properly loaded", geometry, material);
+        }
     }
          
     update(list, deltaTime) { 
+        if (this.dead || !this.mesh) return;
         if(!this.dead){
             if(this.enemy == null){
                 this.faceEnemy(list);

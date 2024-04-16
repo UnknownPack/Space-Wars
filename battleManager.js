@@ -53,37 +53,44 @@ export class battleManager{
     }
 
     async loadResources() {
-        const mtlPath = './models/Space_Ships/Ship1/Starcruiser_military.mtl';
-        const modelPath = './models/Space_Ships/Ship1/Starcruiser_military.obj';
-    
-        // Load materials using MTLLoader
         const mtlLoader = new MTLLoader();
-        const materials = await new Promise((resolve, reject) => {
-            mtlLoader.load(mtlPath, (loadedMaterials) => {
-                loadedMaterials.preload();
-                resolve(loadedMaterials);
-            }, null, reject);
-        });
-    
-        // Load model using OBJLoader and apply materials
         const objLoader = new OBJLoader();
-        objLoader.setMaterials(materials);
-        const object = await new Promise((resolve, reject) => {
-            objLoader.load(modelPath, (obj) => {
-                resolve(obj); // Resolve the loaded object
-            }, null, reject);
-        });
+        try {
+            const materials = await new Promise((resolve, reject) => {
+                mtlLoader.load('path/to/materials.mtl', (materials) => {
+                    materials.preload();
+                    resolve(materials);
+                }, null, reject);
+            });
     
-        // Assuming you want to use the entire loaded object
-        this.spacecraftMaterial= materials;
-        this.spacecraftGeometry = object; 
+            objLoader.setMaterials(materials);
+            const object = await new Promise((resolve, reject) => {
+                objLoader.load('path/to/model.obj', (loadedObject) => {
+                    resolve(loadedObject);  // or traverse and find a specific geometry
+                }, null, reject);
+            });
+    
+            // Assuming object is a mesh or group with meshes
+            this.spacecraftGeometry = object.children.find(child => child instanceof THREE.Mesh).geometry;
+            this.spacecraftMaterial = new THREE.MeshPhongMaterial({
+                map: materials.map,  // Assuming the map exists
+                specular: 0x222222,
+                shininess: 25
+            });
+        } catch (error) {
+            console.error("Error loading model or materials:", error);
+            throw error;  // Re-throw to handle it in initialize()
+        }
     }
     
 
-        async initialize() {
-            await this.loadResources();
-            this.makeTeams(); // Safe to call makeTeams here
-        }
+    async initialize() {
+        await this.loadResources().catch(error => {
+            console.error("Failed to load resources:", error);
+            return;  // Stop the initialization process if resources fail to load
+        });
+        this.makeTeams();  // Proceed only if resources are successfully loaded
+    }
 
     makeTeams(){
         let halves = this.number_of_entites/2;
