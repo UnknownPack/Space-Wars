@@ -22,14 +22,19 @@ export class Spacecraft {
     
         this.dead = false;
         this.scene = scene;
-        this.mesh = null;
-    
-        if (geometry && material) {
-            this.mesh = new THREE.Mesh(geometry, material);
-            this.scene.add(this.mesh);
+        this.mesh = null; 
+
+        if (geometry instanceof THREE.BufferGeometry) {
+            if (material instanceof THREE.Material) {
+                this.mesh = new THREE.Mesh(geometry, material);
+                this.mesh.position.copy(this.position);
+                this.scene.add(this.mesh);
+            } else {
+                console.error("Invalid material provided");
+            }
         } else {
-            console.error("Geometry or material not properly loaded", geometry, material);
-        }
+            console.error("Invalid or undefined geometry provided");
+        } 
     }
          
     update(list, deltaTime) { 
