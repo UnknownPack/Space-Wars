@@ -13,15 +13,13 @@ export class battleManager {
         this.missileList = [];
         this.deltaTime = null;
 
-        this.scene = scene;
-        this.makeTeams();
+        this.scene = scene; 
 
         ///////////////////////////////
         //  Objects and Materials   //
         /////////////////////////////
         
-        this.spacecraftGeometry = null;
-        this.spacecraftMaterial = null;
+         
         this.spacecraftGeometry= new THREE.BoxGeometry(10, 10, 10); // width, height
         this.spacecraftMaterial = new THREE.MeshPhongMaterial({
             color: 0xffffff,     // White color
@@ -65,7 +63,7 @@ export class battleManager {
                 this.getRandomInt(areaMin.x, areaMax.x),
                 this.getRandomInt(areaMin.y, areaMax.y),
                 this.getRandomInt(areaMin.z, areaMax.z)
-);
+                    );
         
                 const new_spacecraft = new Spacecraft(spawnPosition.x, spawnPosition.y, spawnPosition.z, 1000, 1, 25, 0, this.scene, i, this.spacecraftGeometry, this.spacecraftMaterial );
                 this.teams[i].push(new_spacecraft);
@@ -75,11 +73,12 @@ export class battleManager {
     }
 
     update(deltaTime){
+        console.log("I am in update"); 
         for(const spaceCraft of this.spacecraftList){
-            if(spaceCraft.getSide() == 0){
+            if(spaceCraft.getSide() === 0){
                 spaceCraft.update(this.teamTwo, deltaTime);
             }
-            else if (spaceCraft.getSide() == 1){
+            else if (spaceCraft.getSide() === 1){
                 spaceCraft.update(this.teamOne, deltaTime);
             }
             spaceCraft.shipRenderer();
