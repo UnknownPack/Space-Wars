@@ -17,7 +17,7 @@ export class Spacecraft {
         this.range = range;
     
         this.enemy = null;
-        this.missileList = [];
+        this.missleList = [];
         this.side = side;
     
         this.dead = false;
@@ -53,7 +53,7 @@ export class Spacecraft {
             this.mesh.position.copy(this.position);
             this.mesh.quaternion.copy(this.quaternion);
         }
-         
+        console.log(this.missleList.length);
 
         if(this.health == 0){
             explode();
@@ -106,7 +106,7 @@ export class Spacecraft {
 
   
     giveMissileList(){
-        return missleList;
+        return this.missleList;
     }
 
     explode() {

@@ -73,8 +73,7 @@ var MyUpdateLoop = function (){
    
   renderer.render(scene,camera);
   var deltaTime = clock.getDelta();
-  theBattleManager.update(deltaTime);
-  theBattleManager.displayShipPos();
+  theBattleManager.update(deltaTime); 
   requestAnimationFrame(MyUpdateLoop);
   };
 

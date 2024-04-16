@@ -13,22 +13,24 @@ export class battleManager {
         this.missileList = [];
         this.deltaTime = null;
 
+        this.teamOne = [];
+        this.teamTwo = [];
+        this.teams = [this.teamOne, this.teamTwo];
+        this.spacecraftList = [];
         this.scene = scene; 
-
+        this.makeTeams();
         ///////////////////////////////
         //  Objects and Materials   //
         /////////////////////////////
         
          
-        this.spacecraftGeometry= new THREE.BoxGeometry(10, 10, 10); // width, height
+        this.spacecraftGeometry= new THREE.BoxGeometry(2, 1, 1); // width, height
         this.spacecraftMaterial = new THREE.MeshPhongMaterial({
-            color: 0xffffff,     // White color
-            specular: 0x050505,  // Very low specular highlights
-            shininess: 10        // Relatively low shininess
+            color: 0xff0000, // Red color
+            specular: 0x050505,
+            shininess: 10
         });
          
-
-
         /*
         const textureLoader = new THREE.TextureLoader();
         textureLoader.load('./models/Space_Ships/Ship1/Starcruiser_military.mtl', (texture) => {
@@ -52,7 +54,7 @@ export class battleManager {
     }
 
     makeTeams(){
-        let halves = this.number_of_entites/2;
+        let halves = this.number_of_entities/2;
         for(let i = 0; i<2; i++){
             for(let p = 0; p<halves; p++){
 
@@ -66,14 +68,14 @@ export class battleManager {
                     );
         
                 const new_spacecraft = new Spacecraft(spawnPosition.x, spawnPosition.y, spawnPosition.z, 1000, 1, 25, 0, this.scene, i, this.spacecraftGeometry, this.spacecraftMaterial );
+                console.log("Creating spacecraft at position", spawnPosition);
                 this.teams[i].push(new_spacecraft);
                 this.spacecraftList.push(new_spacecraft);
             }
         }
     }
 
-    update(deltaTime){
-        console.log("I am in update"); 
+    update(deltaTime){ 
         for(const spaceCraft of this.spacecraftList){
             if(spaceCraft.getSide() === 0){
                 spaceCraft.update(this.teamTwo, deltaTime);
@@ -89,16 +91,7 @@ export class battleManager {
             }
         }
         this.manageMissiles(deltaTime);
-
-        for(const spaceCraft of this.spacecraftList){
-            console.log(spaceCraft.getPosition());
-        }
-    }
-
-    displayShipPos(){
-        for(const spaceCraft of this.spacecraftList){
-            console.log(spaceCraft.getPosition());
-        }
+        console.log(this.missileList.length);
     }
 
     manageMissiles(deltaTime){
