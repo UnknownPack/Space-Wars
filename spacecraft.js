@@ -116,7 +116,7 @@ export class Spacecraft {
 
   
     giveMissileList(){
-        return this.missleList;
+        return missleList;
     }
 
     explode() {

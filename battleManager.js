@@ -11,54 +11,97 @@ export class battleManager {
         this.scene = scene;
         this.spacecraftList = [];
         this.missileList = [];
-        this.teams = [[], []]; // Initialize teams arrays
-        this.activeMissiles = [];
-        this.explodedMissiles = [];
+        this.deltaTime = null;
+
+        this.scene = scene;
+
+        ///////////////////////////////
+        //  Objects and Materials   //
+        /////////////////////////////
+        
+        this.spacecraftGeometry = null;
+        this.spacecraftMaterial = null;
+        this.spacecraftGeometry= new THREE.BoxGeometry(3, 1, 1); // width, height
+        this.spacecraftMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff }); // white color
+         
+
+
+        /*
+        const textureLoader = new THREE.TextureLoader();
+        textureLoader.load('./models/Space_Ships/Ship1/Starcruiser_military.mtl', (texture) => {
+            this.spacecraftMaterial = new THREE.MeshPhongMaterial({ 
+                map: texture,
+                specular: 0x222222,
+                shininess: 25
+            });
+
+            const objLoader = new OBJLoader();
+            objLoader.load('./models/Space_Ships/Ship1/Starcruiser_military.obj', (object) => {
+                object.traverse((child) => {
+                    if (child.isMesh) {
+                        this.spacecraftGeometry = child.geometry;
+                    }
+                });
+                // Now that we have the geometry and material, we can create spacecraft instances as needed
+            });
+        });
+        */
     }
 
+    makeTeams(){
+        let halves = this.number_of_entites/2;
+        for(let i = 0; i<2; i++){
+            for(let p = 0; p<halves; p++){
 
+            let areaMin = this.middle_of_battle.clone().sub(new THREE.Vector3(this.radius_of_battle, this.radius_of_battle, this.radius_of_battle));
+            let areaMax = this.middle_of_battle.clone().add(new THREE.Vector3(this.radius_of_battle, this.radius_of_battle, this.radius_of_battle));
 
-    makeTeams() {
-        let halves = Math.floor(this.number_of_entities / 2);
-        for (let i = 0; i < 2; i++) {
-            for (let p = 0; p < halves; p++) {
-                let spawnPosition = this.getRandomPosition();
-                const new_spacecraft = new Spacecraft(spawnPosition, 1000, i, this.spacecraftGeometry, this.spacecraftMaterial, this.scene);
+            let spawnPosition = new THREE.Vector3(
+                this.getRandomInt(areaMin.x, areaMax.x),
+                this.getRandomInt(areaMin.y, areaMax.y),
+                this.getRandomInt(areaMin.z, areaMax.z)
+);
+        
+                const new_spacecraft = new Spacecraft(spawnPosition.x, spawnPosition.y, spawnPosition.z, 1000, 1, 25, 0, this.scene, i, this.spacecraftGeometry, this.spacecraftMaterial );
                 this.teams[i].push(new_spacecraft);
                 this.spacecraftList.push(new_spacecraft);
             }
         }
     }
 
-    update(deltaTime) {
-        this.explodedMissiles = [];
-        for (const spaceCraft of this.spacecraftList) {
-            spaceCraft.update(deltaTime);
+    update(deltaTime){
+        for(const spaceCraft of this.spacecraftList){
+            if(spaceCraft.getSide() == 0){
+                spaceCraft.update(this.teamTwo, deltaTime);
+            }
+            else if (spaceCraft.getSide() == 1){
+                spaceCraft.update(this.teamOne, deltaTime);
+            }
+            spaceCraft.shipRenderer();
+        this.missileList = [];
 
-            let missiles = spaceCraft.giveMissileList();
-            this.missileList.push(...missiles);
-
-            for (const missile of missiles) {
-                if (missile.isExploded()) {
-                    this.explodedMissiles.push(missile);
-                } else {
-                    missile.update(deltaTime);
-                }
+            for (const missile of spaceCraft.giveMissileList()){
+                this.missileList.push(missile);
             }
         }
-
-        // Filter out exploded missiles
-        this.missileList = this.missileList.filter(missile => !this.explodedMissiles.includes(missile));
+        this.manageMissiles(deltaTime);
     }
 
-    getRandomPosition() {
-        let areaMin = this.middle_of_battle.clone().sub(new THREE.Vector3(this.radius_of_battle, this.radius_of_battle, this.radius_of_battle));
-        let areaMax = this.middle_of_battle.clone().add(new THREE.Vector3(this.radius_of_battle, this.radius_of_battle, this.radius_of_battle));
-        return new THREE.Vector3(
-            this.getRandomInt(areaMin.x, areaMax.x),
-            this.getRandomInt(areaMin.y, areaMax.y),
-            this.getRandomInt(areaMin.z, areaMax.z)
-        );
+    manageMissiles(deltaTime){
+        this.explodedMissile = [];
+        for (const missile in this.missileList){
+            if(missile.isExploded()){
+                this.missileList = this.missileList.filter(elem => !this.explodedMissile.includes(elem));
+            }
+            else{
+                missile.update(deltaTime);
+                missile.missileRenderer(); 
+            }  
+        }
+    }
+
+    makeNumEven(number) {
+        return number % 2 === 1 ? number + 1 : number;
     }
 
     getRandomInt(min, max) {
