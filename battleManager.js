@@ -24,11 +24,11 @@ export class battleManager {
          
          // Ensure that materials are loaded before loading the object
         const mtlLoader = new MTLLoader();
-        mtlLoader.load('./models/Space_Ships/sof/sof_.mtl', (materials) => {
+        mtlLoader.load('./models/Space_Ships/Ship1/Starcruiser_military.mtl', (materials) => {
             materials.preload();
             const objLoader = new OBJLoader();
             objLoader.setMaterials(materials);
-            objLoader.load('./models/Space_Ships/sof/sof_.obj', (object) => {
+            objLoader.load('./models/Space_Ships/Ship1/Starcruiser_military.obj', (object) => {
                 object.traverse((child) => {
                     if (child.isMesh) {
                         child.material = new THREE.MeshPhongMaterial({

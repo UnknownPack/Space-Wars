@@ -23,7 +23,7 @@ export class Spacecraft {
         this.dead = false;
         this.scene = scene; 
         this.mesh = new THREE.Mesh(geometry, material);
-        this.mesh.scale.set(0.35, 0.35, 0.35); 
+        this.mesh.scale.set(0.005, 0.005, 0.005); 
         this.mesh.position.copy(this.position);
         this.scene.add(this.mesh);
 
@@ -39,7 +39,7 @@ export class Spacecraft {
         if (this.dead || !this.mesh) return;
 
         // Calculate the forward vector
-        const forward = new THREE.Vector3(0, 0, -1);
+        const forward = new THREE.Vector3(0, 0, 1);
         forward.applyQuaternion(this.quaternion);  // Apply the ship's current rotation to the forward vector
 
         // Update the position: Move the ship forward
