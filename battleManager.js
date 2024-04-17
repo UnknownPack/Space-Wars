@@ -17,51 +17,37 @@ export class battleManager {
         this.teamTwo = [];
         this.teams = [this.teamOne, this.teamTwo];
         this.spacecraftList = [];
-        this.scene = scene; 
-        this.makeTeams();
+        this.scene = scene;  
         ///////////////////////////////
         //  Objects and Materials   //
         /////////////////////////////
          
-        this.spacecraftGeometry = null;
-        this.spacecraftMaterial = new THREE.MeshPhongMaterial({
-            color: 0xff0000, // Red color
-            specular: 0x050505,
-            shininess: 10
+         // Ensure that materials are loaded before loading the object
+        const mtlLoader = new MTLLoader();
+        mtlLoader.load('./models/Space_Ships/sof/sof_.mtl', (materials) => {
+            materials.preload();
+            const objLoader = new OBJLoader();
+            objLoader.setMaterials(materials);
+            objLoader.load('./models/Space_Ships/sof/sof_.obj', (object) => {
+                object.traverse((child) => {
+                    if (child.isMesh) {
+                        child.material = new THREE.MeshPhongMaterial({
+                            color: 0xffffff, // Example: Set a default color or use loaded materials
+                        });
+                        this.spacecraftGeometry = child.geometry;
+                        this.spacecraftMaterial = child.material;
+                        this.makeTeams(); // Ensure this is called only after the geometry and materials are fully prepared
+                    }
+                }); 
+            }, null, (error) => {
+                console.error('An error happened during OBJ loading:', error);
+            });
         });
-        const objLoader = new OBJLoader();
-        objLoader.load('./models/Space_Ship/SpaceShipDetailed.obj', (object) => {
-            object.traverse((child) => {
-                if (child.isMesh) {
-                    this.spacecraftGeometry = child.geometry;
-                    // Now geometry is loaded, can initialize teams
-                    this.makeTeams();
-                }
-            }); 
-        });
+
  
  
          
-        /*
-        const textureLoader = new THREE.TextureLoader();
-        textureLoader.load('./models/Space_Ships/Ship1/Starcruiser_military.mtl', (texture) => {
-            this.spacecraftMaterial = new THREE.MeshPhongMaterial({ 
-                map: texture,
-                specular: 0x222222,
-                shininess: 25
-            });
-
-            const objLoader = new OBJLoader();
-            objLoader.load('./models/Space_Ships/Ship1/Starcruiser_military.obj', (object) => {
-                object.traverse((child) => {
-                    if (child.isMesh) {
-                        this.spacecraftGeometry = child.geometry;
-                    }
-                });
-                // Now that we have the geometry and material, we can create spacecraft instances as needed
-            });
-        });
-        */
+         
     }
 
     makeTeams(){

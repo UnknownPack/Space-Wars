@@ -23,40 +23,55 @@ export class Spacecraft {
         this.dead = false;
         this.scene = scene; 
         this.mesh = new THREE.Mesh(geometry, material);
+        this.mesh.scale.set(0.35, 0.35, 0.35); 
         this.mesh.position.copy(this.position);
         this.scene.add(this.mesh);
+
+        if (this.side === 1) {
+            this.quaternion.setFromAxisAngle(new THREE.Vector3(0, 1, 0), Math.PI);  // 180 degrees around Y-axis
+        }
+    
+        // Apply this quaternion to the mesh
+        this.mesh.quaternion.copy(this.quaternion); 
     }
          
-    update(list, deltaTime) { 
+    update(list, deltaTime) {   
         if (this.dead || !this.mesh) return;
-        if(!this.dead){
-            if(this.enemy == null){
-                this.faceEnemy(list);
-            }
-            else{
-                if (this.targetQuaternion){
-                    THREE.Quaternion.slerp(this.quaternion, this.targetQuaternion, this.quaternion, deltaTime * this.rotationSpeed);
-                }  
-                while(this.position.distanceTo(this.target.position) > this.range){
-                    const forward = new THREE.Vector3(0, 0, -1).applyQuaternion(this.quaternion);
-                    forward.multiplyScalar(this.speed * deltaTime);
-                    this.position.add(forward);
-                }
-    
-                if(this.position.distanceTo(this.target.position) <= this.range){
-                    for(let i = 0; i <this.ammo; i++){
-                        const rocket = new Missile (this.position.x, this.position.y, this.position.z,50, 0.05, 100, this.target, 5000, this.scene);
-                        rocket.addSelfToMissileList(this.missleList);
-                    }
-                }
-            }
-            this.mesh.position.copy(this.position);
-            this.mesh.quaternion.copy(this.quaternion);
-        }
-        console.log(this.position);
 
-        if(this.health == 0){
-            explode();
+        // Calculate the forward vector
+        const forward = new THREE.Vector3(0, 0, -1);
+        forward.applyQuaternion(this.quaternion);  // Apply the ship's current rotation to the forward vector
+
+        // Update the position: Move the ship forward
+        const velocity = forward.multiplyScalar(this.speed * deltaTime);
+        this.position.add(velocity);
+
+        // Check if the ship has an enemy and adjust orientation and position accordingly
+        if (this.enemy === null) {
+            this.faceEnemy(list);  // Find and face the closest enemy
+        } 
+        else {
+            // Smoothly interpolate the current rotation towards the target rotation
+            if (this.targetQuaternion) {
+                this.quaternion.slerp(this.targetQuaternion, deltaTime * this.rotationSpeed);
+            }
+
+            // If within range, fire missiles
+            if (this.position.distanceTo(this.enemy.position) <= this.range) {
+                for (let i = 0; i < this.ammo; i++) {
+                    const rocket = new Missile(this.position.x, this.position.y, this.position.z, 50, 0.05, 100, this.enemy, 5000, this.scene);
+                    rocket.addSelfToMissileList(this.missileList);
+                }
+            }
+        }
+
+        // Sync the mesh position and rotation with the spacecraft's logical position and quaternion
+        this.mesh.position.copy(this.position);
+        this.mesh.quaternion.copy(this.quaternion);
+
+        // Check health and explode if necessary
+        if (this.health <= 0) {
+            this.explode();
         }
     }
 

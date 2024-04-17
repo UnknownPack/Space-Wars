@@ -1,16 +1,17 @@
 import * as THREE from 'three';
 import { OrbitControls } from './build/controls/OrbitControls.js';
 import { battleManager } from './battleManager.js';
-
+import { MTLLoader } from './build/loaders/MTLLoader.js';
+import { OBJLoader } from './build/loaders/OBJLoader.js';
 var scene = new THREE.Scene( );
 var ratio = window.innerWidth/window.innerHeight;
 //create the perspective camera
 //for parameters see https://threejs.org/docs/#api/cameras/PerspectiveCamera
-var camera = new THREE.PerspectiveCamera(45,ratio,0.1,1000);
-camera.position.set(0, 0, 15);
+var camera = new THREE.PerspectiveCamera(45,ratio,0.1,4000);
+camera.position.set(0, 0, -30);
 camera.lookAt(0, 0, 0);
 
-var directionalLight = new THREE.DirectionalLight(0xffffff, 1); // Bright white light
+var directionalLight = new THREE.DirectionalLight(0xffffff, 100);
 directionalLight.position.set(5, 3, 5); // Adjust position to suit scene setup
 scene.add(directionalLight);
 
@@ -33,19 +34,29 @@ scene.add(directionalLight);
 */
 
 // Creates the renderer
-var renderer = new THREE.WebGLRenderer( );
-renderer.setSize(window.innerWidth,window.innerHeight);
+var renderer = new THREE.WebGLRenderer();
+renderer.setClearColor(new THREE.Color('black'));  // Set a clear color different from your object colors
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-document.body.appendChild(renderer.domElement );
+renderer.setSize(window.innerWidth, window.innerHeight);
+document.body.appendChild(renderer.domElement);
 
+////////////////////////////////////////////////////////////////////////////
+
+var geometry = new THREE.BoxGeometry();
+var material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
+var cube = new THREE.Mesh(geometry, material);
+scene.add(cube);
+cube.position.set(0, 0, 0);
+ 
+ 
 
  
  ////////////////////
 //  Space Battle   //
 ///////////////////
-const num_if_ships = 4;
-const radius_of_battle = 10;
+const num_if_ships = 10;
+const radius_of_battle = 50;
 const middle_of_battle = new THREE.Vector3(0, 0, 0);
 const theBattleManager = new battleManager ( num_if_ships, radius_of_battle, middle_of_battle, scene);
  
@@ -97,17 +108,3 @@ function handleKeyDown(event) {
 
 //add keyboard listener
 window.addEventListener('keydown', handleKeyDown, false);
-
-//this fucntion is called when the window is resized
-var MyResize = function ( )
-{
-var width = window.innerWidth;
-var height = window.innerHeight;
-renderer.setSize(width,height);
-camera.aspect = width/height;
-camera.updateProjectionMatrix();
-renderer.render(scene,camera);
-};
-
-//link the resize of the window to the update of the camera
-window.addEventListener( 'resize', MyResize);
