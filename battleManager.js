@@ -64,8 +64,7 @@ export class battleManager {
                 this.getRandomInt(areaMin.z, areaMax.z)
                     );
         
-                const new_spacecraft = new Spacecraft(spawnPosition.x, spawnPosition.y, spawnPosition.z, 1000, 1, 25, 0, this.scene, i, this.spacecraftGeometry, this.spacecraftMaterial );
-                console.log("Creating spacecraft at position", spawnPosition);
+                const new_spacecraft = new Spacecraft(spawnPosition.x, spawnPosition.y, spawnPosition.z, 1000, 25, 25, 0, this.scene, i, this.spacecraftGeometry, this.spacecraftMaterial );
                 this.teams[i].push(new_spacecraft);
                 this.spacecraftList.push(new_spacecraft);
             }
@@ -87,8 +86,7 @@ export class battleManager {
                 this.missileList.push(missile);
             }
         }
-        this.manageMissiles(deltaTime);
-        console.log(this.missileList.length);
+        this.manageMissiles(deltaTime); 
     }
 
     manageMissiles(deltaTime){
@@ -101,7 +99,7 @@ export class battleManager {
                 missile.update(deltaTime);
                 missile.missileRenderer(); 
             }  
-        }
+        }  
     }
 
     makeNumEven(number) {

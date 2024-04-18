@@ -55,8 +55,8 @@ cube.position.set(0, 0, 0);
  ////////////////////
 //  Space Battle   //
 ///////////////////
-const num_if_ships = 30;
-const radius_of_battle = 50;
+const num_if_ships = 2;
+const radius_of_battle = 100;
 const middle_of_battle = new THREE.Vector3(0, 0, 0);
 const theBattleManager = new battleManager ( num_if_ships, radius_of_battle, middle_of_battle, scene);
  
