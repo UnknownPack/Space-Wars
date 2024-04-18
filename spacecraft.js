@@ -80,11 +80,11 @@ export class Spacecraft {
     }
     
     fireMissiles() {
-        var ammo = this.ammo;s
+        var ammo = this.ammo; 
         for (let i = 0; i < ammo; i++) {
             this.ammo--;
             console.log("fired missile! " + this.ammo + " missiles left." );
-            const rocket = new Missile(this.position.x, this.position.y, this.position.z, 50, 0.05, 100, this.enemy, 5000, this.scene);
+            const rocket = new Missile(this.position.x, this.position.y, this.position.z, 15, 0.05, 100, this.enemy, 5000, this.scene);
             this.missleList.push(rocket);
         } 
     }

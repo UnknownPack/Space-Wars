@@ -18,38 +18,33 @@ export class Missile {
         this.mesh = null;
         //this.createMesh(); 
 
-        var geometry = new THREE.SphereGeometry(1, 32, 32); // radius, widthSegments, heightSegments
+        var geometry = new THREE.SphereGeometry(4, 32, 32); // radius, widthSegments, heightSegments
         var material = new THREE.MeshBasicMaterial({ color: 0xffffff }); // white color
         this.mesh = new THREE.Mesh(geometry, material);
         this.scene.add(this.mesh);
     }
 
-    update( deltaTime) { // Fixed reference
+    update(deltaTime) {
+        this.timeLife -= deltaTime;
         this.faceEnemy(this.target);
         
-        while(this.timeLife>0){
-            this.timeLife-=deltaTime;
-            if (!this.quaternion.equals(this.targetQuaternion)) {
-                this.quaternion.slerp(this.quaternion, this.targetQuaternion, this.quaternion, deltaTime * this.rotationSpeed);
-            }
-    
-            // Simplified movement logic
-            const direction = new THREE.Vector3().subVectors(this.target.position, this.position).normalize();
-            const movement = direction.multiplyScalar(deltaTime * this.speed);
-            this.position.add(movement);
-    
-            // Check for explosion condition
-            if (this.position.distanceTo(this.target.position) < 1) { // Threshold check
-                this.explode();
-            }
+        if (!this.quaternion.equals(this.targetQuaternion)) {
+            this.quaternion.slerp(this.quaternion, this.targetQuaternion, this.quaternion, deltaTime * this.rotationSpeed);
         }
-        if(this.timeLife==0){
+    
+        const direction = new THREE.Vector3().subVectors(this.target.position, this.position).normalize();
+        const movement = direction.multiplyScalar(deltaTime * this.speed);
+        this.position.add(movement);
+    
+        if (this.position.distanceTo(this.target.position) < 1 || this.timeLife <= 0) {
             this.explode();
         }
+        
         this.mesh.position.copy(this.position);
         this.mesh.quaternion.copy(this.quaternion);
+        console.log(this.position);
     }
-
+    
     missileRenderer(){
         //checks if mesh is not null and if this mesh is not already in the scene
         if (this.mesh && !this.scene.getObjectById(this.mesh.id)) {
@@ -92,27 +87,26 @@ export class Missile {
     }
 
     explode() {
-        const geometry = new THREE.SphereGeometry(5, 32, 32); // Larger radius for impact, adjust as needed
-        const material = new THREE.MeshBasicMaterial({ color: 0xffff00 }); // Yellow color for explosion
+        const geometry = new THREE.SphereGeometry(5, 32, 32);
+        const material = new THREE.MeshBasicMaterial({ color: 0xffff00 });
         const explosion = new THREE.Mesh(geometry, material);
         explosion.position.copy(this.position);
-        this.exploded = true;
         this.scene.add(explosion);
-
-        var directionalLight = new THREE.DirectionalLight(0xffffff, 0.8); // Slightly lower intensity
+        this.scene.remove(this.mesh);
+        var directionalLight = new THREE.DirectionalLight(0xffffff, 3); // Slightly lower intensity
         directionalLight.position.set(this.position); // Adjust direction as needed
         this.scene.add(directionalLight);
         if (this.mesh.material) this.mesh.material.dispose();
         if (this.mesh.geometry) this.mesh.geometry.dispose();
 
-        /*
         setTimeout(() => {
-            scene.remove(explosionMesh); 
-        }, 3000);
+            this.scene.remove(explosion); 
+        }, 2000);
         this.scene.remove(this.mesh);
-        */
-        
+
+        this.exploded = true;
     }
+    
 
     isExploded(){
         return this.exploded;

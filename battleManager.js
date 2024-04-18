@@ -64,7 +64,7 @@ export class battleManager {
                 this.getRandomInt(areaMin.z, areaMax.z)
                     );
         
-                const new_spacecraft = new Spacecraft(spawnPosition.x, spawnPosition.y, spawnPosition.z, 1000, 5, 100, 2, this.scene, i, this.spacecraftGeometry, this.spacecraftMaterial, 50);
+                const new_spacecraft = new Spacecraft(spawnPosition.x, spawnPosition.y, spawnPosition.z, 1000, 2, 70, 10, this.scene, i, this.spacecraftGeometry, this.spacecraftMaterial, 50);
                 this.teams[i].push(new_spacecraft);
                 this.spacecraftList.push(new_spacecraft);
             }
@@ -96,8 +96,7 @@ export class battleManager {
                 this.missileList = this.missileList.filter(elem => !this.explodedMissile.includes(elem));
             }
             else{
-                missile.update(deltaTime);
-                missile.missileRenderer(); 
+                missile.update(deltaTime); 
             }  
         }  
     }
