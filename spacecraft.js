@@ -5,10 +5,10 @@ import { OBJLoader } from './build/loaders/OBJLoader.js';
 
 export class Spacecraft {
 
-    constructor(x, y, z, health, speed, range, ammo, scene, side, geometry, material, tooClose) {
+    constructor(x, y, z, health, speed, range, ammo, scene, side, geometry, material, tooClose, rateOfFire) {
         this.position = new THREE.Vector3(x, y, z);
         this.quaternion = new THREE.Quaternion();
-        this.rotationSpeed = 5;
+        this.rotationSpeed = 2;
         this.targetQuaternion = new THREE.Quaternion();
     
         this.health = health;
@@ -20,6 +20,7 @@ export class Spacecraft {
         this.missleList = [];
         this.side = side; 
         this.dead = false;
+        this.rateOfFire = rateOfFire;
         this.scene = scene; 
         this.mesh = new THREE.Mesh(geometry, material);
         this.mesh.scale.set(0.07, 0.07, 0.07); 
@@ -61,7 +62,7 @@ export class Spacecraft {
             } 
             else if(!this.evading && this.position.distanceTo(this.enemy.position) <= this.range && this.position.distanceTo(this.enemy.position) >this.tooClose) {
                 // If within range, fire missiles
-                this.fireMissiles();
+                this.fireMissiles(deltaTime);
             }
             else if(this.position.distanceTo(this.enemy.position)<=this.tooClose){
                 this.evading = true;
@@ -79,14 +80,31 @@ export class Spacecraft {
         } 
     }
     
-    fireMissiles() {
+    fireMissiles(deltaTime) {
         var ammo = this.ammo; 
+        rateOfFire-=deltaTime
         for (let i = 0; i < ammo; i++) {
+            if(rateOfFire  == 0){
+                this.ammo--;
+                console.log("fired missile! " + this.ammo + " missiles left." );
+                const rocket = new Missile(this.position.x, this.position.y, this.position.z, 15, 0.05, 100, this.enemy, 5000, this.scene);
+                this.missleList.push(rocket);
+            }
+        }   
+    }
+
+    fireMissiles(deltaTime) {
+        let rof = this.rateOfFire;
+        rof -= deltaTime;
+
+        if (this.rateOfFire <= 0) {
             this.ammo--;
-            console.log("fired missile! " + this.ammo + " missiles left." );
+            console.log("Fired missile! " + this.ammo + " missiles left.");
             const rocket = new Missile(this.position.x, this.position.y, this.position.z, 15, 0.05, 100, this.enemy, 5000, this.scene);
-            this.missleList.push(rocket);
-        } 
+            this.missileList.push(rocket);
+            // Reset the rateOfFire to your desired fire rate interval in seconds (e.g., 2 seconds)
+            this.rateOfFire = 2; // Set this to whatever interval you need
+        }
     }
 
     evasiveManuver(deltaTime){
