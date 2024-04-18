@@ -5,7 +5,7 @@ import { OBJLoader } from './build/loaders/OBJLoader.js';
 
 export class Spacecraft {
 
-    constructor(x, y, z, health, speed, range, ammo, scene, side, geometry, material) {
+    constructor(x, y, z, health, speed, range, ammo, scene, side, geometry, material, tooClose) {
         this.position = new THREE.Vector3(x, y, z);
         this.quaternion = new THREE.Quaternion();
         this.rotationSpeed = 5;
@@ -15,7 +15,7 @@ export class Spacecraft {
         this.speed = speed;
         this.ammo = ammo;
         this.range = range;
-    
+        this.tooClose = tooClose;
         this.enemy = null;
         this.missleList = [];
         this.side = side; 
@@ -23,6 +23,7 @@ export class Spacecraft {
         this.scene = scene; 
         this.mesh = new THREE.Mesh(geometry, material);
         this.mesh.scale.set(0.07, 0.07, 0.07); 
+        this.evading = false;
       //this.mesh.scale.set(0.005, 0.005, 0.005); 
         this.mesh.position.copy(this.position);
         this.scene.add(this.mesh);
@@ -52,15 +53,19 @@ export class Spacecraft {
             this.quaternion.slerp(this.targetQuaternion, deltaTime * this.rotationSpeed);
     
             // Move the ship forward if not within firing range
-            if (this.position.distanceTo(this.enemy.position) > this.range) {
+            if (!this.evading && this.position.distanceTo(this.enemy.position) > this.range && this.position.distanceTo(this.enemy.position) >this.tooClose) {
                 const forward = new THREE.Vector3(0, 0, 1);
                 forward.applyQuaternion(this.quaternion);  // Apply the ship's current rotation to the forward vector
                 const velocity = forward.multiplyScalar(this.speed * deltaTime);
                 this.position.add(velocity);
             } 
-            else {
+            else if(!this.evading && this.position.distanceTo(this.enemy.position) <= this.range && this.position.distanceTo(this.enemy.position) >this.tooClose) {
                 // If within range, fire missiles
                 this.fireMissiles();
+            }
+            else if(this.position.distanceTo(this.enemy.position)<=this.tooClose){
+                this.evading = true;
+                this.evasiveManuver(deltaTime);
             }
         }
     
@@ -75,12 +80,26 @@ export class Spacecraft {
     }
     
     fireMissiles() {
-        for (let i = 0; i < this.ammo; i++) {
+        var ammo = this.ammo;s
+        for (let i = 0; i < ammo; i++) {
+            this.ammo--;
             console.log("fired missile! " + this.ammo + " missiles left." );
             const rocket = new Missile(this.position.x, this.position.y, this.position.z, 50, 0.05, 100, this.enemy, 5000, this.scene);
-            rocket.addSelfToMissileList(this.missleList);
+            this.missleList.push(rocket);
+        } 
+    }
+
+    evasiveManuver(deltaTime){
+        const evadeVector = new Vector3(this.position.x+getRandomInt(2,10),
+                                        this.position.y+getRandomInt(2,10),
+                                        this.position.z+getRandomInt(2,10));
+        if(this.position !=evadeVector) {
+        this.position.slerp(evadeVector, deltaTime * this.speed);
+            if(this.position == evadeVector){
+                this.evading = true; 
+            }
         }
-        this.ammo = 0; // Optionally reset ammo if needed or handle ammo decrement elsewhere
+         
     }
 
     shipRenderer(){
@@ -106,7 +125,6 @@ export class Spacecraft {
         this.enemy = closestShip; // Ensure that this line is being reached 
         return closestShip;
     }
-
    
     setTargetOrientation(targetQuaternion) {
         this.targetQuaternion = targetQuaternion;
@@ -128,7 +146,6 @@ export class Spacecraft {
         }
     }
 
-  
     giveMissileList(){
         return this.missleList;
     }
@@ -161,5 +178,9 @@ export class Spacecraft {
 
     getPosition(){
         return this.position;
+    }
+
+    getRandomInt(min, max) {
+        return Math.floor(Math.random() * (max - min + 1)) + min;
     }
   }

@@ -64,7 +64,7 @@ export class battleManager {
                 this.getRandomInt(areaMin.z, areaMax.z)
                     );
         
-                const new_spacecraft = new Spacecraft(spawnPosition.x, spawnPosition.y, spawnPosition.z, 1000, 25, 25, 0, this.scene, i, this.spacecraftGeometry, this.spacecraftMaterial );
+                const new_spacecraft = new Spacecraft(spawnPosition.x, spawnPosition.y, spawnPosition.z, 1000, 5, 100, 2, this.scene, i, this.spacecraftGeometry, this.spacecraftMaterial, 50);
                 this.teams[i].push(new_spacecraft);
                 this.spacecraftList.push(new_spacecraft);
             }
@@ -91,7 +91,7 @@ export class battleManager {
 
     manageMissiles(deltaTime){
         this.explodedMissile = [];
-        for (const missile in this.missileList){
+        for (const missile of this.missileList){
             if(missile.isExploded()){
                 this.missileList = this.missileList.filter(elem => !this.explodedMissile.includes(elem));
             }

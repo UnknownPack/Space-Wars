@@ -16,23 +16,21 @@ export class Missile {
 
         this.scene = scene;
         this.mesh = null;
-        //this.createMesh();
-
-        this.deltaTime = deltaTime;
+        //this.createMesh(); 
 
         var geometry = new THREE.SphereGeometry(1, 32, 32); // radius, widthSegments, heightSegments
         var material = new THREE.MeshBasicMaterial({ color: 0xffffff }); // white color
         this.mesh = new THREE.Mesh(geometry, material);
-        this.scene.add(sphere);
+        this.scene.add(this.mesh);
     }
 
     update( deltaTime) { // Fixed reference
         this.faceEnemy(this.target);
         
-        while(timeLife>0){
+        while(this.timeLife>0){
             this.timeLife-=deltaTime;
             if (!this.quaternion.equals(this.targetQuaternion)) {
-                THREE.Quaternion.slerp(this.quaternion, this.targetQuaternion, this.quaternion, deltaTime * this.rotationSpeed);
+                this.quaternion.slerp(this.quaternion, this.targetQuaternion, this.quaternion, deltaTime * this.rotationSpeed);
             }
     
             // Simplified movement logic
@@ -45,7 +43,7 @@ export class Missile {
                 this.explode();
             }
         }
-        if(timeLife==0){
+        if(this.timeLife==0){
             this.explode();
         }
         this.mesh.position.copy(this.position);
@@ -85,7 +83,7 @@ export class Missile {
             // No need to call MyUpdateLoop here; it should be part of your rendering loop.
         });        
     }
-    */
+    */ 
 
 
     faceEnemy(target) { 
