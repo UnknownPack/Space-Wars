@@ -25,6 +25,7 @@ export class Spacecraft {
         this.mesh = new THREE.Mesh(geometry, material);
         this.mesh.scale.set(0.07, 0.07, 0.07); 
         this.evading = false;
+        this.needToReload = false;
       //this.mesh.scale.set(0.005, 0.005, 0.005); 
         this.mesh.position.copy(this.position);
         this.scene.add(this.mesh);
@@ -47,27 +48,35 @@ export class Spacecraft {
         if (this.enemy == null) {
             this.faceEnemy(list);  // Find and face the closest enemy
         } else {
-            // Recalculate the target orientation every frame
+            if(this.evading == false || this.needToReload == false){
+                 // Recalculate the target orientation every frame
             this.faceEnemy(list);  // Optionally, you could only call this when the enemy has moved significantly
     
             // Smoothly interpolate the current rotation towards the target rotation
             this.quaternion.slerp(this.targetQuaternion, deltaTime * this.rotationSpeed);
     
             // Move the ship forward if not within firing range
-            if (!this.evading && this.position.distanceTo(this.enemy.position) > this.range && this.position.distanceTo(this.enemy.position) >this.tooClose) {
-                const forward = new THREE.Vector3(0, 0, 1);
-                forward.applyQuaternion(this.quaternion);  // Apply the ship's current rotation to the forward vector
-                const velocity = forward.multiplyScalar(this.speed * deltaTime);
-                this.position.add(velocity);
-            } 
-            else if(!this.evading && this.position.distanceTo(this.enemy.position) <= this.range && this.position.distanceTo(this.enemy.position) >this.tooClose) {
-                // If within range, fire missiles
+            
+            const forward = new THREE.Vector3(0, 0, 1);
+            forward.applyQuaternion(this.quaternion);  // Apply the ship's current rotation to the forward vector
+            const velocity = forward.multiplyScalar(this.speed * deltaTime);
+            this.position.add(velocity);
+            if(!this.evading && this.position.distanceTo(this.enemy.position) <= this.range && this.position.distanceTo(this.enemy.position) >this.tooClose) {
+                    // If within range, fire missiles
                 this.fireMissiles(deltaTime);
             }
-            else if(this.position.distanceTo(this.enemy.position)<=this.tooClose){
-                this.evading = true;
-                this.evasiveManuver(deltaTime);
+            if(this.position.distanceTo(this.enemy.position)<=this.tooClose){
+                this.evading = true; 
+                }
             }
+            else{
+                this.evasiveManuver(deltaTime); 
+            } 
+        }
+
+        
+        if(this.needToReload == true){
+            reloadMissiles(deltaTime);
         }
     
         // Sync the mesh position and rotation with the spacecraft's logical position and quaternion
@@ -82,29 +91,44 @@ export class Spacecraft {
     
     fireMissiles(deltaTime) {
         var ammo = this.ammo; 
-        rateOfFire-=deltaTime
+        let thisRateOfFire = this.rateOfFire;
+        thisRateOfFire-=deltaTime;
         for (let i = 0; i < ammo; i++) {
-            if(rateOfFire  == 0){
+            if(thisRateOfFire  == 0){
                 this.ammo--;
                 console.log("fired missile! " + this.ammo + " missiles left." );
                 const rocket = new Missile(this.position.x, this.position.y, this.position.z, 15, 0.05, 100, this.enemy, 5000, this.scene);
                 this.missleList.push(rocket);
             }
         }   
+        if(ammo == 0){
+            this.needToReload = true;
+        }
     }
 
     fireMissiles(deltaTime) {
-        let rof = this.rateOfFire;
-        rof -= deltaTime;
+        var ammo = this.ammo; 
+        let thisRateOfFire = this.rateOfFire;
 
-        if (this.rateOfFire <= 0) {
-            this.ammo--;
-            console.log("Fired missile! " + this.ammo + " missiles left.");
+        thisRateOfFire-=deltaTime;
+        if (thisRateOfFire <= 0 && ammo > 0) {
+            ammo--;
+            console.log("fired missile! " + this.ammo + " missiles left.");
             const rocket = new Missile(this.position.x, this.position.y, this.position.z, 15, 0.05, 100, this.enemy, 5000, this.scene);
-            this.missileList.push(rocket);
-            // Reset the rateOfFire to your desired fire rate interval in seconds (e.g., 2 seconds)
-            this.rateOfFire = 2; // Set this to whatever interval you need
+            this.missleList.push(rocket);
+            thisRateOfFire =this.rateOfFire; 
         }
+        if (this.ammo == 0) {
+            this.needToReload = true;
+        }
+    } 
+
+    reloadMissiles(deltaTime) { 
+        let timeSinceReload = 0;
+        timeSinceReload += deltaTime;
+            if (this.timeSinceReload >= 10) {
+                this.needToReload = false; 
+            } 
     }
 
     evasiveManuver(deltaTime){
