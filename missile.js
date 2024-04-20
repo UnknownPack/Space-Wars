@@ -18,7 +18,7 @@ export class Missile {
         this.mesh = null;
         //this.createMesh(); 
 
-        var geometry = new THREE.SphereGeometry(4, 32, 32); // radius, widthSegments, heightSegments
+        var geometry = new THREE.SphereGeometry(5, 32, 32); // radius, widthSegments, heightSegments
         var material = new THREE.MeshBasicMaterial({ color: 0xffffff }); // white color
         this.mesh = new THREE.Mesh(geometry, material);
         this.scene.add(this.mesh);
@@ -28,22 +28,26 @@ export class Missile {
         this.timeLife -= deltaTime;
         this.faceEnemy(this.target);
         
-        if (!this.quaternion.equals(this.targetQuaternion)) {
-            this.quaternion.slerp(this.quaternion, this.targetQuaternion, this.quaternion, deltaTime * this.rotationSpeed);
-        }
+        // Correct slerp usage
+        this.quaternion.slerp(this.targetQuaternion, deltaTime * this.rotationSpeed);
     
         const direction = new THREE.Vector3().subVectors(this.target.position, this.position).normalize();
         const movement = direction.multiplyScalar(deltaTime * this.speed);
         this.position.add(movement);
     
+        // Check for impact or end of life
         if (this.position.distanceTo(this.target.position) < 1 || this.timeLife <= 0) {
             this.explode();
-        }
-        
-        this.mesh.position.copy(this.position);
-        this.mesh.quaternion.copy(this.quaternion);
-        console.log(this.position);
+            if (this.position.distanceTo(this.target.position) < 1) {
+                this.target.takeDamage(this.damage);
+            }
+        } else {
+            // Update the missile's mesh position and rotation
+            this.mesh.position.copy(this.position);
+            this.mesh.quaternion.copy(this.quaternion);
+        }  
     }
+    
     
     missileRenderer(){
         //checks if mesh is not null and if this mesh is not already in the scene
@@ -76,9 +80,31 @@ export class Missile {
             this.mesh = object; // Assign the loaded object to this.mesh
             this.scene.add(this.mesh);
             // No need to call MyUpdateLoop here; it should be part of your rendering loop.
-        });        
+        });     
+        
+        
+        const mtlLoader = new MTLLoader();
+        mtlLoader.load('./models/Space_Ships/Ship1/Starcruiser_military.mtl', (materials) => {
+            materials.preload();
+            const objLoader = new OBJLoader();
+            objLoader.setMaterials(materials);
+            objLoader.load('./models/Space_Ships/Ship1/Starcruiser_military.obj', (object) => {
+                object.traverse((child) => {
+                    if (child.isMesh) {
+                        child.material = new THREE.MeshPhongMaterial({
+                            color: 0xffffff, // Example: Set a default color or use loaded materials
+                        });
+                        this.spacecraftGeometry = child.geometry;
+                        this.spacecraftMaterial = child.material;
+                        this.makeTeams(); // Ensure this is called only after the geometry and materials are fully prepared
+                    }
+                }); 
+            }, null, (error) => {
+                console.error('An error happened during OBJ loading:', error);
+            });
+        });
     }
-    */ 
+    */
 
 
     faceEnemy(target) { 

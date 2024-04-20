@@ -19,8 +19,7 @@ export class Background {
             texture.generateMipmaps = true;
             texture.needsUpdate = true;
 
-            this.createSun(texture); // Now pass the texture to createSun
-            console.log("star made 1");
+            this.createSun(texture); // Now pass the texture to createSun 
         });
     }
 
@@ -43,9 +42,7 @@ export class Background {
         // Create a point light to simulate the sun's light
         const light = new THREE.PointLight(0xffff00, 10, 1000, 3);
         light.position.set(-100, 0, +600);
-        this.scene.add(light);
-
-        console.log("star made 2");
+        this.scene.add(light); 
     }
 }
 
