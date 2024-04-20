@@ -33,6 +33,7 @@ export class Spacecraft {
         this.reloadDuration = 10; // Duration to reload in seconds
         this.mesh.position.copy(this.position);
         this.scene.add(this.mesh);
+        this.distanceto_enemy = null;
 
         if (this.side === 1) {
             this.quaternion.setFromAxisAngle(new THREE.Vector3(0, 1, 0), Math.PI); // Rotate 180 degrees around Y-axis
@@ -41,86 +42,76 @@ export class Spacecraft {
     }
          
     update(list, deltaTime) {   
-        if (this.dead || !this.mesh) {
+        
+        if (!this.enemy) {
+            this.faceEnemy(list);  
+            console.log("i have no enemy");
+        }
+        if (this.enemy) {
+            this.distanceto_enemy = this.position.distanceTo(this.enemy.position);
+            console.log("found Enemy");
+        }
+        if (this.dead || !this.mesh || this.health <= 0) {
             console.log("I AM DEAD");
             this.explode();
             return;
         }
-    
-        // Always face the closest enemy
-        this.faceEnemy(list);
-    
-        // Determine distance to enemy
-        let distanceToEnemy = this.enemy ? this.position.distanceTo(this.enemy.position) : Infinity;
-    
-        // Determine if we need to evade or attack based on distance
-        if (distanceToEnemy <= this.tooClose) {
-            // Too close, start evading
-            if (!this.evading) { 
-                this.evading = true;
-                this.evadeStartTime = Date.now(); // Reset the timer when starting evasion
+        else{ 
+              
+                 
+        
+            // Determine if we need to evade or attack based on distance
+            if (this.distanceto_enemy <= this.tooClose) {
+                // Too close, start evading
+                if (!this.evading) { 
+                    this.evading = true;
+                    this.evadeStartTime = Date.now(); // Reset the timer when starting evasion
+                }
+            } 
+            else {
+                // If we are evading but are no longer too close, we can stop evading
+                if (this.evading && (Date.now() - this.evadeStartTime) / 100 > this.evasionDuration) { 
+                    this.evading = false;
+                }
+                
+                // If not evading and within range, attempt to fire
+                if ( this.distanceto_enemy <= this.range && !this.enemy.isDead()) {
+                    this.fireMissiles(deltaTime);
+                }
             }
+        
+            // If currently evading, continue the maneuver
+            if (this.evading) {
+                this.evasiveManuver(deltaTime);
+            } 
+            else {
+                // Not evading, so we move towards or maintain our position relative to the enemy
+                // Smoothly interpolate the current rotation towards the target rotation
+                this.quaternion.slerp(this.targetQuaternion, deltaTime * this.rotationSpeed);
+        
+                // Move the ship forward
+                const forward = new THREE.Vector3(0, 0, 1);
+                forward.applyQuaternion(this.quaternion); // Apply the ship's current rotation to the forward vector
+                const velocity = forward.multiplyScalar(this.speed * deltaTime);
+                this.position.add(velocity);
+            }
+        
+            // Reload if needed
+            if (this.needToReload) {
+                this.reloadMissiles(deltaTime);
+            }
+            else{
+                if ( this.distanceto_enemy <= this.range && !this.enemy.isDead()) {
+                    this.fireMissiles(deltaTime);
+                }
+            }
+        
+            // Sync the mesh position and rotation with the spacecraft's logical position and quaternion
+            this.mesh.position.copy(this.position);
+            this.mesh.quaternion.copy(this.quaternion);
         } 
-        else {
-            // If we are evading but are no longer too close, we can stop evading
-            if (this.evading && (Date.now() - this.evadeStartTime) / 1000 > this.evasionDuration) { 
-                this.evading = false;
-            }
-            
-            // If not evading and within range, attempt to fire
-            if ( distanceToEnemy <= this.range) {
-                this.fireMissiles(deltaTime);
-            }
-        }
-    
-        // If currently evading, continue the maneuver
-        if (this.evading) {
-            this.evasiveManuver(deltaTime);
-        } else {
-            // Not evading, so we move towards or maintain our position relative to the enemy
-            // Smoothly interpolate the current rotation towards the target rotation
-            this.quaternion.slerp(this.targetQuaternion, deltaTime * this.rotationSpeed);
-    
-            // Move the ship forward
-            const forward = new THREE.Vector3(0, 0, 1);
-            forward.applyQuaternion(this.quaternion); // Apply the ship's current rotation to the forward vector
-            const velocity = forward.multiplyScalar(this.speed * deltaTime);
-            this.position.add(velocity);
-        }
-    
-        // Reload if needed
-        if (this.needToReload) {
-            this.reloadMissiles(deltaTime);
-        }
-    
-        // Sync the mesh position and rotation with the spacecraft's logical position and quaternion
-        this.mesh.position.copy(this.position);
-        this.mesh.quaternion.copy(this.quaternion);
-    
-        // Check health and explode if necessary
-        if (this.health <= 0) {
-            this.explode();
-        } 
-    }
-    /*
-    
-    fireMissiles(deltaTime) {
-        var ammo = this.ammo; 
-        let thisRateOfFire = this.rateOfFire;
-        thisRateOfFire-=deltaTime;
-        for (let i = 0; i < ammo; i++) {
-            if(thisRateOfFire  == 0){
-                this.ammo--;
-                console.log("fired missile! " + this.ammo + " missiles left." );
-                const rocket = new Missile(this.position.x, this.position.y, this.position.z, 15, 0.05, 100, this.enemy, 5000, this.scene);
-                this.missleList.push(rocket);
-            }
-        }   
-        if(ammo == 0){
-            this.needToReload = true;
-        }
-    }
-    */
+         
+    } 
 
     fireMissiles(deltaTime) {
         if (this.ammo > 0) {
@@ -238,7 +229,7 @@ export class Spacecraft {
 
     explode() {
         console.log("I have exploded");
-        const geometry = new THREE.SphereGeometry(5, 32, 32);
+        const geometry = new THREE.SphereGeometry(12, 32, 32);
         const material = new THREE.MeshBasicMaterial({ color: 0xffff00 });
         const explosion = new THREE.Mesh(geometry, material);
         explosion.position.copy(this.position);
@@ -246,7 +237,7 @@ export class Spacecraft {
         this.scene.add(explosion);
     
         // Add a light to simulate the explosion's flash
-        var directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+        var directionalLight = new THREE.DirectionalLight(0xffffff, 6);
         directionalLight.position.set(this.position);
         this.scene.add(directionalLight);
     
@@ -254,6 +245,7 @@ export class Spacecraft {
         if (this.mesh.material) this.mesh.material.dispose();
         if (this.mesh.geometry) this.mesh.geometry.dispose();
         this.scene.remove(this.mesh); // Remove the spacecraft's mesh
+         
     
         // Remove the explosion mesh after 3 seconds
         setTimeout(() => {
@@ -261,6 +253,7 @@ export class Spacecraft {
             this.scene.remove(directionalLight); // Also remove the directional light from the scene
         }, 3000);
     }
+    
     
 
     takeDamage(damage){
@@ -273,6 +266,10 @@ export class Spacecraft {
 
     getPosition(){
         return this.position;
+    }
+
+    isDead(){
+        return this.dead;
     }
 
     getRandomInt(min, max) {

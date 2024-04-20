@@ -71,23 +71,43 @@ export class battleManager {
         }
     }
 
-    update(deltaTime){ 
-        for(const spaceCraft of this.spacecraftList){
-            if(spaceCraft.getSide() === 0){
-                spaceCraft.update(this.teamTwo, deltaTime);
+    update(deltaTime) { 
+        for (let i = this.spacecraftList.length - 1; i >= 0; i--) {
+            const spaceCraft = this.spacecraftList[i];
+            if (spaceCraft.isDead()) {
+                const teamIndex = spaceCraft.getSide(); // Assuming getSide() returns 0 or 1
+                const team = this.teams[teamIndex];
+                
+                // Find index of the spacecraft in the team array and remove it
+                const teamArrayIndex = team.indexOf(spaceCraft);
+                if (teamArrayIndex !== -1) {
+                    team.splice(teamArrayIndex, 1);
+                }
+                
+                // Remove from spacecraft list
+                this.spacecraftList.splice(i, 1);
             }
-            else if (spaceCraft.getSide() === 1){
+        }
+    
+        this.spacecraftList.forEach(spaceCraft => {
+            if (spaceCraft.getSide() === 0) {
+                spaceCraft.update(this.teamTwo, deltaTime);
+            } else if (spaceCraft.getSide() === 1) {
                 spaceCraft.update(this.teamOne, deltaTime);
             }
             spaceCraft.shipRenderer();
-        this.missileList = [];
-
-            for (const missile of spaceCraft.giveMissileList()){
+    
+            // Collect missiles from all spacecrafts
+            this.missileList = [];
+            for (const missile of spaceCraft.giveMissileList()) {
                 this.missileList.push(missile);
             }
-        }
-        this.manageMissiles(deltaTime); 
+        });
+    
+        // Manage missiles
+        this.manageMissiles(deltaTime);
     }
+    
 
     manageMissiles(deltaTime){
         this.explodedMissile = [];

@@ -18,7 +18,7 @@ export class Missile {
         this.mesh = null;
         //this.createMesh(); 
 
-        var geometry = new THREE.SphereGeometry(5, 32, 32); // radius, widthSegments, heightSegments
+        var geometry = new THREE.SphereGeometry(2, 32, 32); // radius, widthSegments, heightSegments
         var material = new THREE.MeshBasicMaterial({ color: 0xffffff }); // white color
         this.mesh = new THREE.Mesh(geometry, material);
         this.scene.add(this.mesh);
@@ -119,7 +119,7 @@ export class Missile {
         explosion.position.copy(this.position);
         this.scene.add(explosion);
         this.scene.remove(this.mesh);
-        var directionalLight = new THREE.DirectionalLight(0xffffff, 3); // Slightly lower intensity
+        var directionalLight = new THREE.DirectionalLight(0xffffff, 10); // Slightly lower intensity
         directionalLight.position.set(this.position); // Adjust direction as needed
         this.scene.add(directionalLight);
         if (this.mesh.material) this.mesh.material.dispose();
