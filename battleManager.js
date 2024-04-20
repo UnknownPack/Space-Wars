@@ -115,7 +115,7 @@ export class battleManager {
             if(missile.isExploded()){
                 this.missileList = this.missileList.filter(elem => !this.explodedMissile.includes(elem));
             }
-            else{
+            else if(!missile.isExploded()){
                 missile.update(deltaTime); 
                 missile.missileRenderer();
             }  
