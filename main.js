@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { OrbitControls } from './build/controls/OrbitControls.js';
 import { battleManager } from './battleManager.js';
+import { Background } from './background.js';
 import { MTLLoader } from './build/loaders/MTLLoader.js';
 import { OBJLoader } from './build/loaders/OBJLoader.js';
 var scene = new THREE.Scene( );
@@ -11,14 +12,15 @@ var camera = new THREE.PerspectiveCamera(45,ratio,0.1,4000);
 camera.position.set(0, 0, -30);
 camera.lookAt(0, 0, 0);
 
-var directionalLight = new THREE.DirectionalLight(0xffffff, 100);
-directionalLight.position.set(5, 3, 5); // Adjust position to suit scene setup
-scene.add(directionalLight);
-
-// Modify the lighting environment
-var ambientLight = new THREE.AmbientLight("#100d69", 1); // Lower intensity for ambient light
+var ambientLight = new THREE.AmbientLight("#100d69", 0.5); // Lower intensity for ambient light
 scene.add(ambientLight);
-/*
+
+ /*
+
+var directionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
+directionalLight.position.set(0,0,-40); // Adjust position to suit scene setup
+scene.add(directionalLight);
+ 
 var pointLight = new THREE.PointLight("#100d69", 1, 100, 2); // Add a point light for sharper highlights
 pointLight.position.set(1, 1, 1); // Position the point light
 scene.add(pointLight);
@@ -34,7 +36,9 @@ scene.add(directionalLight);
 */
 
 // Creates the renderer
-var renderer = new THREE.WebGLRenderer();
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setPixelRatio(window.devicePixelRatio);
 renderer.setClearColor(new THREE.Color('black'));  // Set a clear color different from your object colors
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
@@ -55,12 +59,13 @@ cube.position.set(0, 0, 0);
  ////////////////////
 //  Space Battle   //
 ///////////////////
-const num_if_ships = 2;
-const radius_of_battle = 100;
+const num_if_ships = 10;
+const radius_of_battle = 150;
 const middle_of_battle = new THREE.Vector3(0, 0, 0);
 const theBattleManager = new battleManager ( num_if_ships, radius_of_battle, middle_of_battle, scene);
  
- 
+
+const backround = new Background(scene); 
 //////////////
 // CONTROLS //
 //////////////

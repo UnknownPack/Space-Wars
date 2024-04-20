@@ -8,7 +8,7 @@ export class Spacecraft {
     constructor(x, y, z, health, speed, range, ammo, scene, side, geometry, material, tooClose, rateOfFire) {
         this.position = new THREE.Vector3(x, y, z);
         this.quaternion = new THREE.Quaternion();
-        this.rotationSpeed = 2;
+        this.rotationSpeed = 0.5;
         this.targetQuaternion = new THREE.Quaternion();
     
         this.health = health;
@@ -25,6 +25,8 @@ export class Spacecraft {
         this.mesh = new THREE.Mesh(geometry, material);
         this.mesh.scale.set(0.07, 0.07, 0.07); 
         this.evading = false;
+        this.evadeStartTime = 0;
+        this.evasionDuration = 5;
         this.needToReload = false;
       //this.mesh.scale.set(0.005, 0.005, 0.005); 
         this.mesh.position.copy(this.position);
@@ -131,18 +133,34 @@ export class Spacecraft {
             } 
     }
 
-    evasiveManuver(deltaTime){
-        const evadeVector = new Vector3(this.position.x+getRandomInt(2,10),
-                                        this.position.y+getRandomInt(2,10),
-                                        this.position.z+getRandomInt(2,10));
-        if(this.position !=evadeVector) {
-        this.position.slerp(evadeVector, deltaTime * this.speed);
-            if(this.position == evadeVector){
-                this.evading = true; 
-            }
+    evasiveManuver(deltaTime) {
+        if (!this.evading) {
+            this.evadeStartTime = Date.now();  // Store the start time of evasion
+            this.evading = true;
         }
-         
+    
+        const evadeTimeElapsed = (Date.now() - this.evadeStartTime) / 1000;  // Convert to seconds
+    
+        // Evade if the elapsed time is less than the evasion duration or if the enemy is still too close
+        if (evadeTimeElapsed < this.evasionDuration || this.position.distanceTo(this.enemy.position) <= this.tooClose) {
+            // If the enemy is too close, move in the opposite direction
+            const evadeDirection = new THREE.Vector3().subVectors(this.position, this.enemy.position).normalize();
+            
+            // Apply the evasion direction to the current position
+            const newPosition = this.position.clone().addScaledVector(evadeDirection, this.speed * deltaTime);
+            this.position.copy(newPosition);
+    
+            // Reset the evade start time if the enemy is still too close, to continue evading
+            if (this.position.distanceTo(this.enemy.position) <= this.tooClose) {
+                this.evadeStartTime = Date.now();
+            }
+        } else {
+            // Evasion complete, reset flags and state
+            this.evading = false;
+            this.evadeStartTime = 0;
+        }
     }
+    
 
     shipRenderer(){
         //checks if mesh is not null and if this mesh is not already in the scene
@@ -223,6 +241,9 @@ export class Spacecraft {
     }
 
     getRandomInt(min, max) {
+        min = Math.ceil(min);
+        max = Math.floor(max);
         return Math.floor(Math.random() * (max - min + 1)) + min;
     }
+    
   }
