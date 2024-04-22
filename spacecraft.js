@@ -5,7 +5,7 @@ import { OBJLoader } from './build/loaders/OBJLoader.js';
 
 export class Spacecraft {
 
-    constructor(x, y, z, health, speed, range, ammo, scene, side, geometry, material, tooClose, rateOfFire) {
+    constructor(x, y, z, health, speed, range, ammo, scene, side, geometry, material, tooClose, rateOfFire ) {
         this.position = new THREE.Vector3(x, y, z);
         this.quaternion = new THREE.Quaternion();
         this.rotationSpeed = 0.5;
@@ -33,7 +33,7 @@ export class Spacecraft {
         this.reloadDuration = 10; // Duration to reload in seconds
         this.mesh.position.copy(this.position);
         this.scene.add(this.mesh);
-        this.distanceto_enemy = null;
+        this.distanceto_enemy = null; 
 
         if (this.side === 1) {
             this.quaternion.setFromAxisAngle(new THREE.Vector3(0, 1, 0), Math.PI); // Rotate 180 degrees around Y-axis
@@ -131,10 +131,11 @@ export class Spacecraft {
                     missilePosition.z,
                     15, // Speed of the missile
                     0.05, // Rotation speed of the missile
-                    500, // Damage of the missile
+                    250, // Damage of the missile
                     this.enemy, // Target of the missile
-                    5000, // Lifetime of the missile
-                    this.scene // The scene to which the missile will be added
+                    20, // Lifetime of the missile
+                    this.scene,
+                    this.side
                 );
                 this.missleList.push(rocket);
                 this.rateOfFire = this.initialRateOfFire; // Reset rate of fire
@@ -263,18 +264,19 @@ export class Spacecraft {
         this.scene.add(explosion);
     
         // Add a light to simulate the explosion's flash
-        var directionalLight = new THREE.DirectionalLight(0xffffff, 6);
+        var directionalLight = new THREE.DirectionalLight(0xffffff, 15);
         directionalLight.position.set(this.position);
         this.scene.add(directionalLight);
     
-        // Dispose of the spacecraft's material and geometry
-        if (this.mesh.material) this.mesh.material.dispose();
-        if (this.mesh.geometry) this.mesh.geometry.dispose();
+        // Dispose of the spacecraft's material and geometry 
         this.scene.remove(this.mesh); // Remove the spacecraft's mesh
          
     
         // Remove the explosion mesh after 3 seconds
         setTimeout(() => {
+            if(this.mesh !=null) this.scene.remove(this.mesh); 
+            if (this.mesh.material) this.mesh.material.dispose();
+            if (this.mesh.geometry) this.mesh.geometry.dispose();
             this.scene.remove(explosion);
             this.scene.remove(directionalLight); // Also remove the directional light from the scene
         }, 3000);

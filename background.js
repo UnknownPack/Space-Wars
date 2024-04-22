@@ -40,7 +40,7 @@ export class Background {
         this.scene.add(sun);
 
         // Create a point light to simulate the sun's light
-        const light = new THREE.PointLight(0xffff00, 10, 1000, 3);
+        const light = new THREE.PointLight(0xE06214,15, 1000, 2);
         light.position.set(-100, 0, +600);
         this.scene.add(light); 
     }

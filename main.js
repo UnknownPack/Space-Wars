@@ -9,10 +9,10 @@ var ratio = window.innerWidth/window.innerHeight;
 //create the perspective camera
 //for parameters see https://threejs.org/docs/#api/cameras/PerspectiveCamera
 var camera = new THREE.PerspectiveCamera(45,ratio,0.1,4000);
-camera.position.set(0, 0, -30);
+camera.position.set(0, 0, -200);
 camera.lookAt(0, 0, 0);
 
-var ambientLight = new THREE.AmbientLight("#100d69", 0.5); // Lower intensity for ambient light
+var ambientLight = new THREE.AmbientLight(0x030D33, 0.5); // Lower intensity for ambient light
 scene.add(ambientLight);
 
  /*
@@ -59,7 +59,7 @@ cube.position.set(0, 0, 0);
  ////////////////////
 //  Space Battle   //
 ///////////////////
-const num_if_ships = 20;
+const num_if_ships = 4;
 const radius_of_battle = 150;
 const middle_of_battle = new THREE.Vector3(0, 0, 0);
 const theBattleManager = new battleManager ( num_if_ships, radius_of_battle, middle_of_battle, scene);

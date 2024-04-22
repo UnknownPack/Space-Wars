@@ -3,7 +3,7 @@ import { MTLLoader } from './build/loaders/MTLLoader.js';
 import * as THREE from 'three';
 
 export class Missile {
-    constructor(x, y, z, speed, rotationSpeed, damage, target, timeLife,scene) {
+    constructor(x, y, z, speed, rotationSpeed, damage, target, timeLife,scene, side ) {
         this.position = new THREE.Vector3(x, y, z);
         this.quaternion = new THREE.Quaternion();
         this.targetQuaternion = new THREE.Quaternion();
@@ -13,18 +13,25 @@ export class Missile {
         this.target = target;
         this.timeLife = timeLife;
         this.exploded = false;
+        this.side = side;
+        this.scene = scene; 
+        if (this.side === 1) {
+            this.material = new THREE.MeshBasicMaterial({ color: 0xd17979 }); // Set color to #d17979
+        } else {
+            this.material = new THREE.MeshBasicMaterial({ color: 0x6f6ffc }); // Set color to #6f6ffc
+        }
 
-        this.scene = scene;
-        this.mesh = null;
-        //this.createMesh(); 
-
-        var geometry = new THREE.SphereGeometry(2, 32, 32); // radius, widthSegments, heightSegments
-        var material = new THREE.MeshBasicMaterial({ color: 0xffffff }); // white color
-        this.mesh = new THREE.Mesh(geometry, material);
+        const geometry = new THREE.SphereGeometry(2, 32, 32);
+        this.mesh = new THREE.Mesh(geometry, this.material); 
+        this.mesh.scale.set(1, 1, 1);
         this.scene.add(this.mesh);
+        this.directionalLight = new THREE.DirectionalLight(0xffffff, 10); // Slightly lower intensity
+        this.directionalLight.position.set(this.position);
+        this.scene.add(this.directionalLight);
     }
 
     update(deltaTime) {
+        this.directionalLight.position.set(this.position);
         this.timeLife -= deltaTime;
         this.faceEnemy(this.target);
         
@@ -36,7 +43,7 @@ export class Missile {
         this.position.add(movement);
     
         // Check for impact or end of life
-        if (this.position.distanceTo(this.target.position) < 1 || this.timeLife <= 0) {
+        if (this.position.distanceTo(this.target.position) < 1 || this.timeLife <= 0 ||this.target == null) {
             this.explode();
             if (this.position.distanceTo(this.target.position) < 1) {
                 this.target.takeDamage(this.damage);
@@ -66,57 +73,7 @@ export class Missile {
         //if both are true, it adds the boid mesh to the scene
             this.scene.add(this.mesh);
         }
-    }
-
-    /*
-    createMesh(){
-        // Load the OBJ file
-        const textureLoader = new THREE.TextureLoader();
-        const texture = textureLoader.load('./models/Space_Ships/agm-114HellFire/Texture/Texture.jpg');
-
-        // Create a MeshPhongMaterial using the texture
-        const phongMaterial = new THREE.MeshPhongMaterial({ 
-        map: texture,
-        specular: 0x222222,
-        shininess: 25
-        });
-
-        const objLoader = new OBJLoader(); 
-        objLoader.load('./models/Space_Ships/agm-114HellFire/AGM-114HellFire.obj', (object) => {
-            object.traverse((child) => {
-                if (child.isMesh) {
-                    child.material = phongMaterial;
-                }
-            });
-            this.mesh = object; // Assign the loaded object to this.mesh
-            this.scene.add(this.mesh);
-            // No need to call MyUpdateLoop here; it should be part of your rendering loop.
-        });     
-        
-        
-        const mtlLoader = new MTLLoader();
-        mtlLoader.load('./models/Space_Ships/Ship1/Starcruiser_military.mtl', (materials) => {
-            materials.preload();
-            const objLoader = new OBJLoader();
-            objLoader.setMaterials(materials);
-            objLoader.load('./models/Space_Ships/Ship1/Starcruiser_military.obj', (object) => {
-                object.traverse((child) => {
-                    if (child.isMesh) {
-                        child.material = new THREE.MeshPhongMaterial({
-                            color: 0xffffff, // Example: Set a default color or use loaded materials
-                        });
-                        this.spacecraftGeometry = child.geometry;
-                        this.spacecraftMaterial = child.material;
-                        this.makeTeams(); // Ensure this is called only after the geometry and materials are fully prepared
-                    }
-                }); 
-            }, null, (error) => {
-                console.error('An error happened during OBJ loading:', error);
-            });
-        });
-    }
-    */
-
+    }  
 
     faceEnemy(target) { 
         const directionVector = new THREE.Vector3().subVectors(target.position, this.position).normalize();
@@ -128,18 +85,18 @@ export class Missile {
         const material = new THREE.MeshBasicMaterial({ color: 0xffff00 });
         const explosion = new THREE.Mesh(geometry, material);
         explosion.position.copy(this.position);
-        this.scene.add(explosion);
-        this.scene.remove(this.mesh);
-        var directionalLight = new THREE.DirectionalLight(0xffffff, 10); // Slightly lower intensity
+        this.scene.add(explosion); 
+        var directionalLight = new THREE.DirectionalLight(0xffffff, 15); // Slightly lower intensity
         directionalLight.position.set(this.position); // Adjust direction as needed
         this.scene.add(directionalLight);
-        if (this.mesh.material) this.mesh.material.dispose();
-        if (this.mesh.geometry) this.mesh.geometry.dispose();
 
         setTimeout(() => {
+            if(this.mesh !=null)this.scene.remove(this.mesh);
+            if (this.mesh.material) this.mesh.material.dispose();
+            if (this.mesh.geometry) this.mesh.geometry.dispose();
             this.scene.remove(explosion); 
         }, 2000);
-        this.scene.remove(this.mesh);
+        
 
         this.exploded = true;
     }
