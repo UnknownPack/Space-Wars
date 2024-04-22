@@ -57,7 +57,9 @@ export class Spacecraft {
             return;
         }
         else{ 
-              
+            if (!this.evading && this.distanceto_enemy <= this.range && !this.enemy.isDead()) {
+                this.fireMissiles(deltaTime);
+            }
                  
         
             // Determine if we need to evade or attack based on distance
@@ -65,7 +67,8 @@ export class Spacecraft {
                 // Too close, start evading
                 if (!this.evading) { 
                     this.evading = true;
-                    this.evadeStartTime = Date.now(); // Reset the timer when starting evasion
+                    this.evadeStartTime = Date.now();
+                    this.fireMissiles(deltaTime) // Reset the timer when starting evasion
                 }
             } 
             else {
@@ -111,26 +114,35 @@ export class Spacecraft {
             this.mesh.quaternion.copy(this.quaternion);
         } 
          
+        this.updateMissiles(deltaTime);
     } 
 
     fireMissiles(deltaTime) {
         if (this.ammo > 0) {
             this.rateOfFire -= deltaTime;
-            if (this.rateOfFire <= 0) {
+            if (this.rateOfFire <= 0 && this.enemy) {  // Ensure there is an enemy to target
                 this.ammo--;
                 console.log("Missile fired, ammo left: " + this.ammo);
+                // Make sure to clone the position so that the missile does not reference the spacecraft's position
+                const missilePosition = this.position.clone();
                 const rocket = new Missile(
-                    this.position.x,
-                    this.position.y,
-                    this.position.z,
-                    15, 0.05,
-                    500,
-                    this.enemy,
-                    5000,
-                    this.scene
+                    missilePosition.x,
+                    missilePosition.y,
+                    missilePosition.z,
+                    15, // Speed of the missile
+                    0.05, // Rotation speed of the missile
+                    500, // Damage of the missile
+                    this.enemy, // Target of the missile
+                    5000, // Lifetime of the missile
+                    this.scene // The scene to which the missile will be added
                 );
                 this.missleList.push(rocket);
                 this.rateOfFire = this.initialRateOfFire; // Reset rate of fire
+    
+                // Immediately call the missile's update method with the current deltaTime to avoid initial static state
+                rocket.update(deltaTime);
+                // Add the missile to the scene
+                this.scene.add(rocket.mesh);
             }
         }
         if (this.ammo == 0 && !this.needToReload) {
@@ -225,6 +237,20 @@ export class Spacecraft {
 
     giveMissileList(){
         return this.missleList;
+    }
+
+    updateMissiles(deltaTime) {
+        for (let i = this.missleList.length - 1; i >= 0; i--) {
+            const missile = this.missleList[i];
+            if (missile.isExploded()) {
+                // Remove the missile from the scene and the list
+                this.scene.remove(missile.mesh);
+                this.missleList.splice(i, 1);
+            } else {
+                missile.update(deltaTime); // Update missile logic
+                missile.missileRenderer(); // Render missile
+            }
+        }
     }
 
     explode() {
