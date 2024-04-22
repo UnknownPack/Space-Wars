@@ -106,6 +106,10 @@ export class battleManager {
     
         // Manage missiles
         this.manageMissiles(deltaTime);
+
+        if(this.teamOne.length == 0 || this.teamTwo.length == 0){
+            console.log("Team destoryed");
+        }
     }
     
 

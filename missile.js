@@ -46,6 +46,17 @@ export class Missile {
             this.mesh.position.copy(this.position);
             this.mesh.quaternion.copy(this.quaternion);
         }  
+        if (this.timeLife <= 0 && !this.exploded) {
+            this.explode(); // Handle explosion which removes the mesh immediately
+            // Schedule final cleanup 10 seconds after explosion
+            setTimeout(() => {
+                if (this.mesh) {
+                    this.scene.remove(this.mesh);
+                    if (this.mesh.material) this.mesh.material.dispose();
+                    if (this.mesh.geometry) this.mesh.geometry.dispose();
+                }
+            }, 10000);
+        }
     }
     
     
