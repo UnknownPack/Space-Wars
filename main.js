@@ -28,59 +28,21 @@ renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
 
-////////////////////////////////////////////////////////////////////////////
-
-var geometry = new THREE.BoxGeometry();
-var material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
-var cube = new THREE.Mesh(geometry, material);
-scene.add(cube);
-cube.position.set(0, 0, 0);
- 
+//////////////////////////////////////////////////////////////////////////// 
  
 
  
  ////////////////////
 //  Space Battle   //
 ///////////////////
-const num_if_ships = 8;
+const num_if_ships = 10;
 const radius_of_battle = 150;
 const middle_of_battle = new THREE.Vector3(0, 0, 0);
 const theBattleManager = new battleManager ( num_if_ships, radius_of_battle, middle_of_battle, scene);
-
-var settings = {
-  num_of_ships: 8,
-  radius_of_battle: 150
-};
-
-// Create a new dat.GUI instance
-var gui = new dat.GUI();
-gui.add(settings, 'num_of_ships', 1, 20).onChange(updateScene);
-gui.add(settings, 'radius_of_battle', 100, 300).onChange(updateScene);
-
-function updateScene() {
-  // Remove existing ships/battle elements
-  clearBattleScene();
-
-  // Add new ships/battle elements based on updated settings
-  const middle_of_battle = new THREE.Vector3(0, 0, 0);
-  theBattleManager = new battleManager(settings.num_of_ships, settings.radius_of_battle, middle_of_battle, scene);
-
-  // Refresh or recreate other scene elements as necessary
-  // ...
-
-  // You might need to call a render or update function if your scene doesn't automatically update
-  renderer.render(scene, camera);
-}
-
-function clearBattleScene() {
-  // Implement the logic to remove ships or other elements from the scene
-  // For example, if you have an array storing your ships, you could loop through it and remove each ship from the scene:
-  theBattleManager.clearList();
-  // Don't forget to dispose of geometries, materials, and textures if you're not using them anymore
-}
+ 
  
 
-const backround = new Background(scene); 
+const backround = new Background(250, scene); 
 //////////////
 // CONTROLS //
 //////////////
@@ -100,6 +62,7 @@ var MyUpdateLoop = function (){
   renderer.render(scene,camera);
   var deltaTime = clock.getDelta();
   theBattleManager.update(deltaTime); 
+  backround.update(deltaTime);
   requestAnimationFrame(MyUpdateLoop);
   };
 

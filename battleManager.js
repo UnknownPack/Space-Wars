@@ -35,7 +35,7 @@ export class battleManager {
                          if (child.isMesh) {
                              child.material = new THREE.MeshPhongMaterial({
                                  map: texture, // Apply the texture
-                                 color: 0xffffff // Optional: Set a default color or use loaded materials
+                                 color: 0x808080  // Optional: Set a default color or use loaded materials
                              });
                              this.spacecraftGeometry = child.geometry;
                              this.spacecraftMaterial = child.material;
@@ -75,7 +75,7 @@ export class battleManager {
     }
 
     update(deltaTime) { 
-        for (let i = this.spacecraftList.length - 1; i >= 0; i--) {
+        for (let i = this.spacecraftList.length - 1 ; i >= 0; i--) {
             const spaceCraft = this.spacecraftList[i];
             if (spaceCraft.isDead()) {
                 const teamIndex = spaceCraft.getSide(); // Assuming getSide() returns 0 or 1
@@ -92,24 +92,15 @@ export class battleManager {
             }
         }
     
+        this.missileList = [];
         this.spacecraftList.forEach(spaceCraft => {
-            if (spaceCraft.getSide() === 0) {
-                spaceCraft.update(this.teamTwo, deltaTime);
-            } else if (spaceCraft.getSide() === 1) {
-                spaceCraft.update(this.teamOne, deltaTime);
-            }
+            spaceCraft.update(this.teamTwo, deltaTime);  // Assuming side handling
             spaceCraft.shipRenderer();
-    
-            // Collect missiles from all spacecrafts
-            this.missileList = [];
+            
             for (const missile of spaceCraft.giveMissileList()) {
                 this.missileList.push(missile);
             }
-        }); 
-
-        if(this.teamOne.length == 0 || this.teamTwo.length == 0){
-            console.log("Team destoryed");
-        }
+        });
     } 
 
     makeNumEven(number) {

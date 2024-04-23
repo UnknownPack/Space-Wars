@@ -22,7 +22,8 @@ export class Spacecraft {
         this.dead = false;
         this.rateOfFire = rateOfFire;
         this.initialRateOfFire = rateOfFire;  
-        this.scene = scene;
+        this.scene = scene; 
+
         this.mesh = new THREE.Mesh(geometry, material);
         this.mesh.scale.set(0.07, 0.07, 0.07);
         this.evading = false;
@@ -35,24 +36,21 @@ export class Spacecraft {
         this.scene.add(this.mesh);
         this.distanceto_enemy = null; 
 
-        if (this.side === 1) {
-            this.quaternion.setFromAxisAngle(new THREE.Vector3(0, 1, 0), Math.PI);  
-        }
+        if (this.side === 0) {
+            this.quaternion.setFromAxisAngle(new THREE.Vector3(0, 1, 0), Math.PI);   
+        } 
         this.mesh.quaternion.copy(this.quaternion);
     }
          
     update(list, deltaTime) {   
         
         if (!this.enemy) {
-            this.faceEnemy(list);  
-            console.log("i have no enemy");
+            this.faceEnemy(list);   
         }
         if (this.enemy) {
-            this.distanceto_enemy = this.position.distanceTo(this.enemy.position);
-            console.log("found Enemy");
+            this.distanceto_enemy = this.position.distanceTo(this.enemy.position); 
         }
-        if (this.dead || !this.mesh || this.health <= 0) {
-            console.log("I AM DEAD");
+        if (this.dead || !this.mesh || this.health <= 0) { 
             this.explode();
             return;
         }
@@ -107,9 +105,7 @@ export class Spacecraft {
                 if ( this.distanceto_enemy <= this.range && !this.enemy.isDead()) {
                     this.fireMissiles(deltaTime);
                 }
-            }
-        
-            // Sync the mesh position and rotation with the spacecraft's logical position and quaternion
+            } 
             this.mesh.position.copy(this.position);
             this.mesh.quaternion.copy(this.quaternion);
         } 
@@ -120,10 +116,8 @@ export class Spacecraft {
     fireMissiles(deltaTime) {
         if (this.ammo > 0) {
             this.rateOfFire -= deltaTime;
-            if (this.rateOfFire <= 0 && this.enemy) {  // Ensure there is an enemy to target
-                this.ammo--;
-                console.log("Missile fired, ammo left: " + this.ammo);
-                // Make sure to clone the position so that the missile does not reference the spacecraft's position
+            if (this.rateOfFire <= 0 && this.enemy) {   
+                this.ammo--; 
                 const missilePosition = this.position.clone();
                 const rocket = new Missile(
                     missilePosition.x,
@@ -169,14 +163,9 @@ export class Spacecraft {
             this.evading = true;
         }
     
-        const evadeTimeElapsed = (Date.now() - this.evadeStartTime) / 1000;  // Convert to seconds
-    
-        // Evade if the elapsed time is less than the evasion duration or if the enemy is still too close
-        if (evadeTimeElapsed < this.evasionDuration || this.position.distanceTo(this.enemy.position) <= this.tooClose) {
-            // If the enemy is too close, move in the opposite direction
-            const evadeDirection = new THREE.Vector3().subVectors(this.position, this.enemy.position).normalize();
-            
-            // Apply the evasion direction to the current position
+        const evadeTimeElapsed = (Date.now() - this.evadeStartTime) / 1000;   
+        if (evadeTimeElapsed < this.evasionDuration || this.position.distanceTo(this.enemy.position) <= this.tooClose) { 
+            const evadeDirection = new THREE.Vector3().subVectors(this.position, this.enemy.position).normalize(); 
             const newPosition = this.position.clone().addScaledVector(evadeDirection, this.speed * deltaTime);
             this.position.copy(newPosition);
     
@@ -220,15 +209,30 @@ export class Spacecraft {
         this.targetQuaternion = targetQuaternion;
     }
 
-    faceEnemy(list){
-        const closestEnemy = this.searchForClosestEnemy(list);
-        if (closestEnemy) {
-            const directionVector = new THREE.Vector3().subVectors(closestEnemy.position, this.position).normalize();
+    faceEnemy(list) {
+        let closestEnemy = null;
+        let shortestDistance = Number.MAX_VALUE;
+    
+        for (const ship of list) {
+            if (!ship.isDead() && ship !== this) {
+                let distance = this.position.distanceTo(ship.position);
+                if (distance < shortestDistance) {
+                    shortestDistance = distance;
+                    closestEnemy = ship;
+                }
+            }
+        }
+    
+        this.enemy = closestEnemy; // Assign the closest living enemy that isn't itself
+        if (this.enemy) {
+            const directionVector = new THREE.Vector3().subVectors(this.enemy.position, this.position).normalize();
             const targetQuaternion = new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 0, 1), directionVector);
             this.setTargetOrientation(targetQuaternion);
+        } else {
+            this.resetTargetQuat(); // Reset orientation if no enemies are found
         }
-        this.enemy = closestEnemy;
     }
+    
 
     resetTargetQuat(){
         if(this.targetQuaternion){
@@ -254,8 +258,7 @@ export class Spacecraft {
         }
     }
 
-    explode() {
-        console.log("I have exploded");
+    explode() { 
         const geometry = new THREE.SphereGeometry(12, 32, 32);
         const material = new THREE.MeshBasicMaterial({ color: 0xffff00 });
         const explosion = new THREE.Mesh(geometry, material);

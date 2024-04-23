@@ -16,18 +16,21 @@ export class Missile {
         this.side = side;
         this.scene = scene; 
         if (this.side === 1) {
-            this.material = new THREE.MeshBasicMaterial({ color: 0xd17979 }); // Set color to #d17979
+            this.material = new THREE.MeshPhongMaterial({ color: 0xd17979 }); // Set color to #d17979
+            this.directionalLight = new THREE.DirectionalLight(0xd17979, 25);
         } else {
-            this.material = new THREE.MeshBasicMaterial({ color: 0x6f6ffc }); // Set color to #6f6ffc
+            this.material = new THREE.MeshPhongMaterial({ color: 0x6f6ffc }); // Set color to #6f6ffc
+            this.directionalLight = new THREE.DirectionalLight(0x6f6ffc, 25);
         }
 
         const geometry = new THREE.SphereGeometry(2, 32, 32);
         this.mesh = new THREE.Mesh(geometry, this.material); 
         this.mesh.scale.set(1, 1, 1);
-        this.scene.add(this.mesh);
-        this.directionalLight = new THREE.DirectionalLight(0xffffff, 10); // Slightly lower intensity
+        this.scene.add(this.mesh); 
         this.directionalLight.position.set(this.position);
         this.scene.add(this.directionalLight);
+
+        
     }
 
     update(deltaTime) {
