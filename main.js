@@ -4,36 +4,19 @@ import { battleManager } from './battleManager.js';
 import { Background } from './background.js';
 import { MTLLoader } from './build/loaders/MTLLoader.js';
 import { OBJLoader } from './build/loaders/OBJLoader.js';
+import dat from './build/controls/dat.gui.module.js';
+
+
+
+
 var scene = new THREE.Scene( );
-var ratio = window.innerWidth/window.innerHeight;
-//create the perspective camera
-//for parameters see https://threejs.org/docs/#api/cameras/PerspectiveCamera
+var ratio = window.innerWidth/window.innerHeight; 
 var camera = new THREE.PerspectiveCamera(45,ratio,0.1,4000);
 camera.position.set(0, 0, -200);
 camera.lookAt(0, 0, 0);
 
 var ambientLight = new THREE.AmbientLight(0x030D33, 0.5); // Lower intensity for ambient light
-scene.add(ambientLight);
-
- /*
-
-var directionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
-directionalLight.position.set(0,0,-40); // Adjust position to suit scene setup
-scene.add(directionalLight);
- 
-var pointLight = new THREE.PointLight("#100d69", 1, 100, 2); // Add a point light for sharper highlights
-pointLight.position.set(1, 1, 1); // Position the point light
-scene.add(pointLight);
-
-// You can also add a directional light similar to the sun's light
-var directionalLight = new THREE.DirectionalLight(0xffffff, 0.8); // Slightly lower intensity
-directionalLight.position.set(0, 1, 0); // Adjust direction as needed
-scene.add(directionalLight);
- 
-var directionalLight = new THREE.DirectionalLight(0xffffff, 1);
-directionalLight.position.set(0,30,0);
-scene.add(directionalLight);
-*/
+scene.add(ambientLight); 
 
 // Creates the renderer
 const renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -59,10 +42,42 @@ cube.position.set(0, 0, 0);
  ////////////////////
 //  Space Battle   //
 ///////////////////
-const num_if_ships = 4;
+const num_if_ships = 8;
 const radius_of_battle = 150;
 const middle_of_battle = new THREE.Vector3(0, 0, 0);
 const theBattleManager = new battleManager ( num_if_ships, radius_of_battle, middle_of_battle, scene);
+
+var settings = {
+  num_of_ships: 8,
+  radius_of_battle: 150
+};
+
+// Create a new dat.GUI instance
+var gui = new dat.GUI();
+gui.add(settings, 'num_of_ships', 1, 20).onChange(updateScene);
+gui.add(settings, 'radius_of_battle', 100, 300).onChange(updateScene);
+
+function updateScene() {
+  // Remove existing ships/battle elements
+  clearBattleScene();
+
+  // Add new ships/battle elements based on updated settings
+  const middle_of_battle = new THREE.Vector3(0, 0, 0);
+  theBattleManager = new battleManager(settings.num_of_ships, settings.radius_of_battle, middle_of_battle, scene);
+
+  // Refresh or recreate other scene elements as necessary
+  // ...
+
+  // You might need to call a render or update function if your scene doesn't automatically update
+  renderer.render(scene, camera);
+}
+
+function clearBattleScene() {
+  // Implement the logic to remove ships or other elements from the scene
+  // For example, if you have an array storing your ships, you could loop through it and remove each ship from the scene:
+  theBattleManager.clearList();
+  // Don't forget to dispose of geometries, materials, and textures if you're not using them anymore
+}
  
 
 const backround = new Background(scene); 

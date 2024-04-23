@@ -89,7 +89,7 @@ export class Missile {
         var directionalLight = new THREE.DirectionalLight(0xffffff, 15); // Slightly lower intensity
         directionalLight.position.set(this.position); // Adjust direction as needed
         this.scene.add(directionalLight);
-
+ 
         setTimeout(() => {
             if(this.mesh !=null)this.scene.remove(this.mesh);
             if (this.mesh.material) this.mesh.material.dispose();

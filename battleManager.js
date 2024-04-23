@@ -23,26 +23,33 @@ export class battleManager {
         /////////////////////////////
          
          // Ensure that materials are loaded before loading the object
-        const mtlLoader = new MTLLoader();
-        mtlLoader.load('./models/Space_Ships/Ship1/Starcruiser_military.mtl', (materials) => {
-            materials.preload();
-            const objLoader = new OBJLoader();
-            objLoader.setMaterials(materials);
-            objLoader.load('./models/Space_Ships/Ship1/Starcruiser_military.obj', (object) => {
-                object.traverse((child) => {
-                    if (child.isMesh) {
-                        child.material = new THREE.MeshPhongMaterial({
-                            color: 0xffffff, // Example: Set a default color or use loaded materials
-                        });
-                        this.spacecraftGeometry = child.geometry;
-                        this.spacecraftMaterial = child.material;
-                        this.makeTeams(); // Ensure this is called only after the geometry and materials are fully prepared
-                    }
-                }); 
-            }, null, (error) => {
-                console.error('An error happened during OBJ loading:', error);
-            });
-        });  
+         const mtlLoader = new MTLLoader();
+         mtlLoader.load('./models/Space_Ships/Ship1/Starcruiser_military.mtl', (materials) => {
+             materials.preload();
+             const objLoader = new OBJLoader();
+             objLoader.setMaterials(materials);
+             objLoader.load('./models/Space_Ships/Ship1/Starcruiser_military.obj', (object) => {
+                 const textureLoader = new THREE.TextureLoader();
+                 textureLoader.load('./models/Space_Ships/sof/material_29.jpg', (texture) => { // Load your JPEG texture
+                     object.traverse((child) => {
+                         if (child.isMesh) {
+                             child.material = new THREE.MeshPhongMaterial({
+                                 map: texture, // Apply the texture
+                                 color: 0xffffff // Optional: Set a default color or use loaded materials
+                             });
+                             this.spacecraftGeometry = child.geometry;
+                             this.spacecraftMaterial = child.material;
+                             this.makeTeams(); // Ensure this is called only after the geometry and materials are fully prepared
+                         }
+                     });
+                 }, null, (error) => {
+                     console.error('An error happened during texture loading:', error);
+                 });
+             }, null, (error) => {
+                 console.error('An error happened during OBJ loading:', error);
+             });
+         });
+         
          
     }
 
@@ -60,7 +67,7 @@ export class battleManager {
                 this.getRandomInt(areaMin.z, areaMax.z)
                     );
         
-                const new_spacecraft = new Spacecraft(spawnPosition.x, spawnPosition.y, spawnPosition.z, 1000, 3, 150, 10, this.scene, i, this.spacecraftGeometry, this.spacecraftMaterial, 40, 7 );
+                const new_spacecraft = new Spacecraft(spawnPosition.x, spawnPosition.y, spawnPosition.z, 1000, 3, 100, 10, this.scene, i, this.spacecraftGeometry, this.spacecraftMaterial, 40, 7 );
                 this.teams[i].push(new_spacecraft);
                 this.spacecraftList.push(new_spacecraft);
             }
@@ -98,29 +105,12 @@ export class battleManager {
             for (const missile of spaceCraft.giveMissileList()) {
                 this.missileList.push(missile);
             }
-        });
-    
-        // Manage missiles
-        this.manageMissiles(deltaTime);
+        }); 
 
         if(this.teamOne.length == 0 || this.teamTwo.length == 0){
             console.log("Team destoryed");
         }
-    }
-    
-
-    manageMissiles(deltaTime){
-        this.explodedMissile = [];
-        for (const missile of this.missileList){
-            if(missile.isExploded()){
-                this.missileList = this.missileList.filter(elem => !this.explodedMissile.includes(elem));
-            }
-            else if(!missile.isExploded()){
-                missile.update(deltaTime); 
-                missile.missileRenderer();
-            }  
-        }  
-    }
+    } 
 
     makeNumEven(number) {
         return number % 2 === 1 ? number + 1 : number;
@@ -128,6 +118,12 @@ export class battleManager {
 
     getRandomInt(min, max) {
         return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+    clearList(){
+        for (const ship of this.spacecraftList){
+            ship.explode();
+        }
     }
 }
 

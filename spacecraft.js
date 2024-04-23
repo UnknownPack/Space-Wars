@@ -13,7 +13,7 @@ export class Spacecraft {
         this.health = health;
         this.speed = speed;
         this.ammo = ammo;
-        this.initialAmmo = ammo; // Store the initial ammo count
+        this.initialAmmo = ammo;  
         this.range = range;
         this.tooClose = tooClose;
         this.enemy = null;
@@ -21,22 +21,22 @@ export class Spacecraft {
         this.side = side;
         this.dead = false;
         this.rateOfFire = rateOfFire;
-        this.initialRateOfFire = rateOfFire; // Store the initial rate of fire
+        this.initialRateOfFire = rateOfFire;  
         this.scene = scene;
         this.mesh = new THREE.Mesh(geometry, material);
         this.mesh.scale.set(0.07, 0.07, 0.07);
         this.evading = false;
         this.evadeStartTime = 0;
-        this.evasionDuration = 5; // Duration of evasion in seconds
+        this.evasionDuration = 5;  
         this.needToReload = false;
-        this.reloadStartTime = 0; // Track the start time of reloading
-        this.reloadDuration = 10; // Duration to reload in seconds
+        this.reloadStartTime = 0;  
+        this.reloadDuration = 10;  
         this.mesh.position.copy(this.position);
         this.scene.add(this.mesh);
         this.distanceto_enemy = null; 
 
         if (this.side === 1) {
-            this.quaternion.setFromAxisAngle(new THREE.Vector3(0, 1, 0), Math.PI); // Rotate 180 degrees around Y-axis
+            this.quaternion.setFromAxisAngle(new THREE.Vector3(0, 1, 0), Math.PI);  
         }
         this.mesh.quaternion.copy(this.quaternion);
     }
@@ -271,7 +271,7 @@ export class Spacecraft {
         // Dispose of the spacecraft's material and geometry 
         this.scene.remove(this.mesh); // Remove the spacecraft's mesh
          
-    
+         
         // Remove the explosion mesh after 3 seconds
         setTimeout(() => {
             if(this.mesh !=null) this.scene.remove(this.mesh); 
@@ -279,7 +279,7 @@ export class Spacecraft {
             if (this.mesh.geometry) this.mesh.geometry.dispose();
             this.scene.remove(explosion);
             this.scene.remove(directionalLight); // Also remove the directional light from the scene
-        }, 3000);
+        }, 3000); 
     }
     
     
