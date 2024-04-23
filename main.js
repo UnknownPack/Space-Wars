@@ -35,7 +35,7 @@ document.body.appendChild(renderer.domElement);
  ////////////////////
 //  Space Battle   //
 ///////////////////
-const num_if_ships = 10;
+const num_if_ships = 6;
 const radius_of_battle = 150;
 const middle_of_battle = new THREE.Vector3(0, 0, 0);
 const theBattleManager = new battleManager ( num_if_ships, radius_of_battle, middle_of_battle, scene);
