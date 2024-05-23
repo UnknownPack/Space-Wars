@@ -1,0 +1,11 @@
+Model Information:
+* title:	Spear Of Adun
+* source:	https://sketchfab.com/3d-models/spear-of-adun-ee318e82c0164355bb30edcd546d4f9a
+* author:	Gileon (https://sketchfab.com/gileon)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "Spear Of Adun" (https://sketchfab.com/3d-models/spear-of-adun-ee318e82c0164355bb30edcd546d4f9a) by Gileon (https://sketchfab.com/gileon) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)

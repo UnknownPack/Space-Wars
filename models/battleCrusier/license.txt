@@ -1,0 +1,11 @@
+Model Information:
+* title:	Lowpoly Battlecruiser
+* source:	https://sketchfab.com/3d-models/lowpoly-battlecruiser-bceaa840550b4ff6bfcfd73ba42a1d5b
+* author:	LordDom (https://sketchfab.com/LordDom)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "Lowpoly Battlecruiser" (https://sketchfab.com/3d-models/lowpoly-battlecruiser-bceaa840550b4ff6bfcfd73ba42a1d5b) by LordDom (https://sketchfab.com/LordDom) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)

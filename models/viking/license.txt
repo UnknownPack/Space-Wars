@@ -1,0 +1,11 @@
+Model Information:
+* title:	Viking - Starcraft 2 - Mecha Var
+* source:	https://sketchfab.com/3d-models/viking-starcraft-2-mecha-var-4fcdb55c977f4dc68b0743c357cf2ab4
+* author:	Catholomew (https://sketchfab.com/Catholomew)
+
+Model License:
+* license type:	CC-BY-NC-4.0 (http://creativecommons.org/licenses/by-nc/4.0/)
+* requirements:	Author must be credited. No commercial use.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "Viking - Starcraft 2 - Mecha Var" (https://sketchfab.com/3d-models/viking-starcraft-2-mecha-var-4fcdb55c977f4dc68b0743c357cf2ab4) by Catholomew (https://sketchfab.com/Catholomew) licensed under CC-BY-NC-4.0 (http://creativecommons.org/licenses/by-nc/4.0/)
