@@ -4,29 +4,52 @@ import { GUI } from './build/controls/dat.gui.module.js';
 
 // Vertex Shader
 const vertexShader = `
+uniform float time;
 varying vec3 vNormal;
 varying vec3 vPosition;
+
 void main() {
     vNormal = normalize(normalMatrix * normal);
     vPosition = (modelViewMatrix * vec4(position, 1.0)).xyz;
-    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+
+    // Calculate the displacement
+    float displacement = sin(time * 2.0 + position.y * 10.0) * 0.2 
+                       + cos(time * 3.0 + position.x * 15.0) * 0.2
+                       + sin(time * 1.5 + position.z * 20.0) * 0.2;
+    vec3 newPosition = position + normal * displacement;
+
+    gl_Position = projectionMatrix * modelViewMatrix * vec4(newPosition, 1.0);
 }
 `;
 
-// Fragment Shader
 const fragmentShader = `
 uniform float time;
 uniform vec3 pulseColor;
 varying vec3 vNormal;
 varying vec3 vPosition;
 
+// Function to convert HSL to RGB
+vec3 hsl2rgb(float h, float s, float l) {
+    float c = (1.0 - abs(2.0 * l - 1.0)) * s;
+    float x = c * (1.0 - abs(mod(h * 6.0, 2.0) - 1.0));
+    float m = l - c / 2.0;
+    vec3 rgb;
+
+    if (h < 1.0 / 6.0) rgb = vec3(c, x, 0.0);
+    else if (h < 2.0 / 6.0) rgb = vec3(x, c, 0.0);
+    else if (h < 3.0 / 6.0) rgb = vec3(0.0, c, x);
+    else if (h < 4.0 / 6.0) rgb = vec3(0.0, x, c);
+    else if (h < 5.0 / 6.0) rgb = vec3(x, 0.0, c);
+    else rgb = vec3(c, 0.0, x);
+
+    return rgb + vec3(m);
+}
+
 void main() {
     float intensity = pow(0.4 - dot(vNormal, vec3(0.0, 0.0, 1.0)), 2.0);
-    vec3 color = vec3(1.0, 0.6, 0.0) * intensity; // Start with orange color
-
-    // Color transition
-    color = mix(color, vec3(1.0, 1.0, 0.0), smoothstep(0.0, 0.3, intensity)); // yellow to orange
-    color = mix(color, vec3(0.0, 0.0, 0.0), smoothstep(0.3, 1.0, intensity)); // orange to black
+    float hue = mod(time * 0.1, 1.0); // Calculate hue based on time
+    vec3 rainbowColor = hsl2rgb(hue, 1.0, 0.5); // Convert HSL to RGB
+    vec3 color = rainbowColor * intensity; // Apply intensity
 
     // Adding pulsating effect
     float pulse = 0.5 + 0.5 * sin(time * 2.0); // Slowed down the pulse by scaling time
@@ -43,14 +66,19 @@ const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
 
+// Enable shadow mapping
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
 // Ambient light
 const ambientLight = new THREE.AmbientLight(0x030D33, 0.5); // Lower intensity for ambient light
 scene.add(ambientLight); 
 
-// Point light to simulate light emission from the sphere
-const pointLight = new THREE.PointLight(0xffffff, 1, 100); // Initial white light
-pointLight.position.set(0, 0, 5);
-scene.add(pointLight);
+// Directional light from above
+const directionalLight = new THREE.DirectionalLight(0xffffff, 0.5); // White directional light
+directionalLight.position.set(0, 25, 0); // Position it above the sphere
+directionalLight.castShadow = true; // Enable shadows for the directional light
+scene.add(directionalLight);
 
 // Shader Material
 const shaderMaterial = new THREE.ShaderMaterial({
@@ -64,19 +92,25 @@ const shaderMaterial = new THREE.ShaderMaterial({
 
 // GUI controls
 const guiControls = {
-  timeSpeed: 0.05,
-  pulseColor: [255, 255, 255] // Default to white
+  timeSpeed: 0.01,
+  pulseColor: [255, 255, 255], // Default to white
+  scale: 1 // Default scale
 };
 
 const gui = new GUI();
-gui.add(guiControls, 'timeSpeed', 0.001, 0.05).name('Time Speed'); // Increased the upper range to 1.0
+gui.add(guiControls, 'timeSpeed', 0.001, 0.01).name('Time Speed');
 gui.addColor(guiControls, 'pulseColor').name('Pulse Color').onChange(value => {
   shaderMaterial.uniforms.pulseColor.value.setRGB(value[0] / 255, value[1] / 255, value[2] / 255);
+});
+gui.add(guiControls, 'scale', 0.1, 5).name('Scale').onChange(value => {
+  sphere.scale.set(value, value, value);
 });
 
 // Create a sphere geometry and add it to the scene
 const geometry = new THREE.SphereGeometry(5, 32, 32);
 const sphere = new THREE.Mesh(geometry, shaderMaterial);
+sphere.position.y = 5; // Bring the sphere higher in the scene
+sphere.castShadow = true; // Enable shadow casting for the sphere
 scene.add(sphere);
 
 // Create a plane to be affected by the light
@@ -85,27 +119,35 @@ const planeMaterial = new THREE.MeshPhongMaterial({ color: 0x999999, side: THREE
 const plane = new THREE.Mesh(planeGeometry, planeMaterial);
 plane.rotation.x = - Math.PI / 2; // Rotate to be a floor
 plane.position.y = -10; // Position it below the sphere
+plane.receiveShadow = true; // Enable shadow receiving for the plane
 scene.add(plane);
 
 // Set camera position
 camera.position.z = 15;
 
 // Function to calculate the pulsating color
-function calculatePulseColor() {
-    const time = shaderMaterial.uniforms.time.value;
+function calculatePulseColor(time, pulseColor) {
+    // Replicate shader logic
     const pulse = 0.5 + 0.5 * Math.sin(time * 2.0);
-    const color = new THREE.Color(1.0, 0.6, 0.0).multiplyScalar(pulse);
 
-    // Mix with other colors
+    // Base color calculations
+    const baseColor = new THREE.Color(1.0, 0.6, 0.0);
     const yellow = new THREE.Color(1.0, 1.0, 0.0);
     const black = new THREE.Color(0.0, 0.0, 0.0);
+
+    // Simulate intensity calculation from shader
     const intensity = Math.pow(0.4 - Math.abs(Math.sin(time)), 2.0);
+    let color = baseColor.clone().multiplyScalar(intensity);
 
-    let finalColor = color.clone().lerp(yellow, THREE.MathUtils.smoothstep(intensity, 0.0, 0.3));
-    finalColor = finalColor.lerp(black, THREE.MathUtils.smoothstep(intensity, 0.3, 1.0));
+    // Color transitions
+    color = color.clone().lerp(yellow, THREE.MathUtils.smoothstep(intensity, 0.0, 0.3));
+    color = color.lerp(black, THREE.MathUtils.smoothstep(intensity, 0.3, 1.0));
 
-    finalColor.multiply(shaderMaterial.uniforms.pulseColor.value);
-    return finalColor;
+    // Apply pulsating effect
+    color.multiplyScalar(pulse);
+    color.multiply(pulseColor);
+
+    return color;
 }
 
 // Animation loop
@@ -116,11 +158,9 @@ function animate() {
     shaderMaterial.uniforms.time.value += guiControls.timeSpeed;
 
     // Update the point light color to match the sphere
-    const pulseColor = calculatePulseColor();
-    pointLight.color.set(pulseColor);
+    const pulseColor = calculatePulseColor(shaderMaterial.uniforms.time.value, shaderMaterial.uniforms.pulseColor.value); 
 
-    // Update the point light position to match the sphere
-    pointLight.position.copy(sphere.position);
+    // Update the point light position to match the sphere 
 
     renderer.render(scene, camera);
 }
