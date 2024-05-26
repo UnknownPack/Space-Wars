@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { Missile } from './missile.js'; 
-import { MTLLoader } from './build/loaders/MTLLoader.js';
-import { OBJLoader } from './build/loaders/OBJLoader.js';
+import { MTLLoader } from '../build/loaders/MTLLoader.js';
+import { OBJLoader } from '../build/loaders/OBJLoader.js';
 
 export class Spacecraft {
 

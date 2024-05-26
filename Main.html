@@ -1,33 +1,47 @@
 <!DOCTYPE html>
-<html lang = "en">
-  <head>
-    <title>Simple Geometry Test</title>
-    <script type="importmap">
-			{
-				"imports": {
-					"three": "./build/three.module.js"
-				}
-			}
-		</script>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gasoline Explosion Shader</title>
     <style>
-      body {margin: 0;}
-      canvas {width: 100%; height: 100%;}
-      </style>
-      <style>
         body {
-          font-family: Monospace;
-          background-color: #000;
-          color: #fff;
-          margin: 0px;
-          overflow: hidden;
+            font-family: Monospace;
+            background-color: #000;
+            color: #fff;
+            margin: 0;
+            overflow: hidden;
+        }
+        canvas {
+            width: 100%;
+            height: 100%;
+        }
+        .dg .cr {
+            font-size: 16px !important; /* Increase the font size */
+            height: 30px !important; /* Increase the height of controls */
+        }
+        .dg .c input[type=text] {
+            height: 20px !important; /* Increase the input box height */
+        }
+        .dg .c select {
+            height: 30px !important; /* Increase the select box height */
+        }
+        .dg .c .slider {
+            height: 15px !important; /* Increase the slider height */
         }
     </style>
-  </head>
-
-  
-  <body>
-	<link rel="shortcut icon" href="#">
-    <script type="module" src="/main.js"></script>
-
-  </body>
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "./build/three.module.js",
+                "OrbitControls": "./build/controls/OrbitControls.js",
+                "GUI": "./build/controls/dat.gui.module.js"
+            }
+        }
+    </script>
+</head>
+<body>
+    <link rel="shortcut icon" href="#">
+    <script type="module" src="main.js"></script>
+</body>
 </html>

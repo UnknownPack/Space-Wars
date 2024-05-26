@@ -1,93 +1,157 @@
 import * as THREE from 'three';
 import { OrbitControls } from './build/controls/OrbitControls.js';
-import { battleManager } from './battleManager.js';
-import { Background } from './background.js';
-import { MTLLoader } from './build/loaders/MTLLoader.js';
-import { OBJLoader } from './build/loaders/OBJLoader.js';
-import dat from './build/controls/dat.gui.module.js';
+import { GUI } from './build/controls/dat.gui.module.js';
 
+// Vertex Shader
+const vertexShader = `
+varying vec3 vNormal;
+varying vec3 vPosition;
+void main() {
+    vNormal = normalize(normalMatrix * normal);
+    vPosition = (modelViewMatrix * vec4(position, 1.0)).xyz;
+    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+}
+`;
 
+// Fragment Shader
+const fragmentShader = `
+uniform float time;
+uniform vec3 pulseColor;
+varying vec3 vNormal;
+varying vec3 vPosition;
 
+void main() {
+    float intensity = pow(0.4 - dot(vNormal, vec3(0.0, 0.0, 1.0)), 2.0);
+    vec3 color = vec3(1.0, 0.6, 0.0) * intensity; // Start with orange color
 
-var scene = new THREE.Scene( );
-var ratio = window.innerWidth/window.innerHeight; 
-var camera = new THREE.PerspectiveCamera(45,ratio,0.1,4000);
-camera.position.set(0, 0, -200);
-camera.lookAt(0, 0, 0);
+    // Color transition
+    color = mix(color, vec3(1.0, 1.0, 0.0), smoothstep(0.0, 0.3, intensity)); // yellow to orange
+    color = mix(color, vec3(0.0, 0.0, 0.0), smoothstep(0.3, 1.0, intensity)); // orange to black
 
-var ambientLight = new THREE.AmbientLight(0x030D33, 0.5); // Lower intensity for ambient light
-scene.add(ambientLight); 
+    // Adding pulsating effect
+    float pulse = 0.5 + 0.5 * sin(time * 2.0); // Slowed down the pulse by scaling time
+    color *= pulse * pulseColor;
 
-// Creates the renderer
+    gl_FragColor = vec4(color, 1.0);
+}
+`;
+
+// Initialize scene, camera, and renderer
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
 const renderer = new THREE.WebGLRenderer({ antialias: true });
-renderer.setSize(window.innerWidth, window.innerHeight);
-renderer.setPixelRatio(window.devicePixelRatio);
-renderer.setClearColor(new THREE.Color('black'));  // Set a clear color different from your object colors
-renderer.shadowMap.enabled = true;
-renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
 
-//////////////////////////////////////////////////////////////////////////// 
- 
+// Ambient light
+const ambientLight = new THREE.AmbientLight(0x030D33, 0.5); // Lower intensity for ambient light
+scene.add(ambientLight); 
 
- 
- ////////////////////
-//  Space Battle   //
-///////////////////
-const num_if_ships = 6;
-const radius_of_battle = 150;
-const middle_of_battle = new THREE.Vector3(0, 0, 0);
-const theBattleManager = new battleManager ( num_if_ships, radius_of_battle, middle_of_battle, scene);
- 
- 
+// Point light to simulate light emission from the sphere
+const pointLight = new THREE.PointLight(0xffffff, 1, 100); // Initial white light
+pointLight.position.set(0, 0, 5);
+scene.add(pointLight);
 
-const backround = new Background(250, scene); 
-//////////////
-// CONTROLS //
-//////////////
+// Shader Material
+const shaderMaterial = new THREE.ShaderMaterial({
+    uniforms: {
+        time: { value: 1.0 },
+        pulseColor: { value: new THREE.Color(1.0, 1.0, 1.0) } // Default to white
+    },
+    vertexShader: vertexShader,
+    fragmentShader: fragmentShader
+});
 
-// move mouse and: left   click to rotate,
-//                 middle click to zoom,
-//                 right  click to pan
-// add the new control and link to the current camera to transform its position
+// GUI controls
+const guiControls = {
+  timeSpeed: 0.05,
+  pulseColor: [255, 255, 255] // Default to white
+};
 
-var controls = new OrbitControls( camera, renderer.domElement );
-var clock = new THREE.Clock(); 
+const gui = new GUI();
+gui.add(guiControls, 'timeSpeed', 0.001, 0.05).name('Time Speed'); // Increased the upper range to 1.0
+gui.addColor(guiControls, 'pulseColor').name('Pulse Color').onChange(value => {
+  shaderMaterial.uniforms.pulseColor.value.setRGB(value[0] / 255, value[1] / 255, value[2] / 255);
+});
 
-/////////////////
-// Update Loop //
-////////////////
-var MyUpdateLoop = function (){  
-  renderer.render(scene,camera);
-  var deltaTime = clock.getDelta();
-  theBattleManager.update(deltaTime); 
-  backround.update(deltaTime);
-  requestAnimationFrame(MyUpdateLoop);
-  };
+// Create a sphere geometry and add it to the scene
+const geometry = new THREE.SphereGeometry(5, 32, 32);
+const sphere = new THREE.Mesh(geometry, shaderMaterial);
+scene.add(sphere);
 
-  requestAnimationFrame(MyUpdateLoop);
+// Create a plane to be affected by the light
+const planeGeometry = new THREE.PlaneGeometry(100, 100);
+const planeMaterial = new THREE.MeshPhongMaterial({ color: 0x999999, side: THREE.DoubleSide });
+const plane = new THREE.Mesh(planeGeometry, planeMaterial);
+plane.rotation.x = - Math.PI / 2; // Rotate to be a floor
+plane.position.y = -10; // Position it below the sphere
+scene.add(plane);
 
-//keyboard functions, change parameters values
-function handleKeyDown(event) {
-  if (event.keyCode === 39)
-  {
-    ClearScene();
-    n++;
-    CreateScene();
-  }
-  if (event.keyCode === 37)
-  {
-    ClearScene();
-    n--;
-    n=Math.max(n,5);
-    CreateScene();
-  }
-  if (event.keyCode === 32)
-  {
-    reverse=!reverse;
-  }
+// Set camera position
+camera.position.z = 15;
+
+// Function to calculate the pulsating color
+function calculatePulseColor() {
+    const time = shaderMaterial.uniforms.time.value;
+    const pulse = 0.5 + 0.5 * Math.sin(time * 2.0);
+    const color = new THREE.Color(1.0, 0.6, 0.0).multiplyScalar(pulse);
+
+    // Mix with other colors
+    const yellow = new THREE.Color(1.0, 1.0, 0.0);
+    const black = new THREE.Color(0.0, 0.0, 0.0);
+    const intensity = Math.pow(0.4 - Math.abs(Math.sin(time)), 2.0);
+
+    let finalColor = color.clone().lerp(yellow, THREE.MathUtils.smoothstep(intensity, 0.0, 0.3));
+    finalColor = finalColor.lerp(black, THREE.MathUtils.smoothstep(intensity, 0.3, 1.0));
+
+    finalColor.multiply(shaderMaterial.uniforms.pulseColor.value);
+    return finalColor;
 }
 
-//add keyboard listener
+// Animation loop
+function animate() {
+    requestAnimationFrame(animate);
+
+    // Update time uniform
+    shaderMaterial.uniforms.time.value += guiControls.timeSpeed;
+
+    // Update the point light color to match the sphere
+    const pulseColor = calculatePulseColor();
+    pointLight.color.set(pulseColor);
+
+    // Update the point light position to match the sphere
+    pointLight.position.copy(sphere.position);
+
+    renderer.render(scene, camera);
+}
+animate();
+
+// Orbit Controls
+const controls = new OrbitControls(camera, renderer.domElement);
+const clock = new THREE.Clock();
+
+// Update loop
+function MyUpdateLoop() {
+    renderer.render(scene, camera);
+    var deltaTime = clock.getDelta();
+    shaderMaterial.uniforms.time.value += guiControls.timeSpeed;
+    requestAnimationFrame(MyUpdateLoop);
+}
+
+requestAnimationFrame(MyUpdateLoop);
+
+// Keyboard functions, change parameters values
+function handleKeyDown(event) {
+    if (event.keyCode === 39) {
+        // Example action: Increase something
+    }
+    if (event.keyCode === 37) {
+        // Example action: Decrease something
+    }
+    if (event.keyCode === 32) {
+        // Example action: Toggle something
+    }
+}
+
+// Add keyboard listener
 window.addEventListener('keydown', handleKeyDown, false);
